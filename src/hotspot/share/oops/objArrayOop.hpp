@@ -69,9 +69,9 @@ private:
   oop atomic_compare_exchange_oop(int index, oop exchange_value, oop compare_value);
 
   // Sizing
-  int object_size()           { return object_size(length()); }
+  size_t object_size()           { return object_size(length()); }
 
-  static int object_size(int length) {
+  static size_t object_size(int length) {
     // This returns the object size in HeapWords.
     size_t asz = array_size_in_bytes(length);
     size_t size_words = align_up(base_offset_in_bytes() + asz, HeapWordSize) / HeapWordSize;

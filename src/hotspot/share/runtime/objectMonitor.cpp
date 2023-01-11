@@ -2278,7 +2278,7 @@ JavaThread* ObjectMonitor::owning_thread(ThreadsList* t_list) {
       return NULL;
     } else {
       Thread* owner = reinterpret_cast<Thread*>(raw_owner);
-      assert(owner->is_Java_thread(), "only JavaThreads own monitors");
+      assert(owner == NULL || owner->is_Java_thread(), "only JavaThreads own monitors");
       return reinterpret_cast<JavaThread*>(owner);
     }
   } else {

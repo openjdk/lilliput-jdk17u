@@ -3757,21 +3757,6 @@ JavaThread* Threads::owning_thread_from_object(ThreadsList * t_list, oop obj) {
   return NULL;
 }
 
-JavaThread* Threads::owning_thread_from_monitor(ThreadsList* t_list, ObjectMonitor* monitor) {
-  if (UseFastLocking) {
-    if (monitor->is_owner_anonymous()) {
-      return owning_thread_from_object(t_list, monitor->object());
-    } else {
-      Thread* owner = reinterpret_cast<Thread*>(monitor->owner());
-      assert(owner == NULL || owner->is_Java_thread(), "only JavaThreads own monitors");
-      return reinterpret_cast<JavaThread*>(owner);
-    }
-  } else {
-    address owner = (address)monitor->owner();
-    return owning_thread_from_monitor_owner(t_list, owner);
-  }
-}
-
 class PrintOnClosure : public ThreadClosure {
 private:
   outputStream* _st;

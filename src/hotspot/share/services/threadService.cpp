@@ -431,7 +431,7 @@ DeadlockCycle* ThreadService::find_deadlocks_at_safepoint(ThreadsList * t_list, 
         }
       } else if (waitingToLockMonitor != NULL) {
         if (waitingToLockMonitor->has_owner()) {
-          currentThread = Threads::owning_thread_from_monitor(t_list, waitingToLockMonitor);
+          currentThread = waitingToLockMonitor->owning_thread(t_list);
           if (currentThread == NULL) {
             // This function is called at a safepoint so the JavaThread
             // that owns waitingToLockMonitor should be findable, but
@@ -1005,7 +1005,7 @@ void DeadlockCycle::print_on_with(ThreadsList * t_list, outputStream* st) const 
       if (!currentThread->current_pending_monitor_is_from_java()) {
         owner_desc = "\n  in JNI, which is held by";
       }
-      currentThread = Threads::owning_thread_from_monitor(t_list, waitingToLockMonitor);
+      currentThread = waitingToLockMonitor->owning_thread(t_list);
       if (currentThread == NULL) {
         // The deadlock was detected at a safepoint so the JavaThread
         // that owns waitingToLockMonitor should be findable, but

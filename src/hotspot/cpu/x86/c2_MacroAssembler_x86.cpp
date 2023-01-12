@@ -769,14 +769,20 @@ void C2_MacroAssembler::fast_unlock(Register objReg, Register boxReg, Register t
   jmpb  (DONE_LABEL);
 
   bind (Stacked);
-  // It's not inflated and it's not recursively stack-locked and it's not biased.
-  // It must be stack-locked.
-  // Try to reset the header to displaced header.
-  // The "box" value on the stack is stable, so we can reload
-  // and be assured we observe the same value as above.
-  movptr(tmpReg, Address(boxReg, 0));
-  lock();
-  cmpxchgptr(tmpReg, Address(objReg, oopDesc::mark_offset_in_bytes())); // Uses RAX which is box
+  if (UseFastLocking) {
+    mov(boxReg, tmpReg);
+    fast_unlock_impl(objReg, boxReg, tmpReg, DONE_LABEL);
+    xorl(tmpReg, tmpReg);
+  } else {
+    // It's not inflated and it's not recursively stack-locked and it's not biased.
+    // It must be stack-locked.
+    // Try to reset the header to displaced header.
+    // The "box" value on the stack is stable, so we can reload
+    // and be assured we observe the same value as above.
+    movptr(tmpReg, Address(boxReg, 0));
+    lock();
+    cmpxchgptr(tmpReg, Address(objReg, oopDesc::mark_offset_in_bytes())); // Uses RAX which is box
+  }
   // Intention fall-thru into DONE_LABEL
 
   // DONE_LABEL is a hot target - we'd really like to place it at the

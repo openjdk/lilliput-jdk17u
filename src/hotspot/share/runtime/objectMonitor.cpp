@@ -2268,20 +2268,3 @@ void ObjectMonitor::print_debug_style_on(outputStream* st) const {
   st->print_cr("}");
 }
 #endif
-
-JavaThread* ObjectMonitor::owning_thread(ThreadsList* t_list) {
-  if (UseFastLocking) {
-    void* raw_owner = owner_raw();
-    if (raw_owner == ANONYMOUS_OWNER) {
-      return Threads::owning_thread_from_object(t_list, object());
-    } else if (raw_owner == DEFLATER_MARKER) {
-      return NULL;
-    } else {
-      Thread* owner = reinterpret_cast<Thread*>(raw_owner);
-      assert(owner == NULL || owner->is_Java_thread(), "only JavaThreads own monitors");
-      return reinterpret_cast<JavaThread*>(owner);
-    }
-  } else {
-    return Threads::owning_thread_from_monitor_owner(t_list, (address)owner());
-  }
-}

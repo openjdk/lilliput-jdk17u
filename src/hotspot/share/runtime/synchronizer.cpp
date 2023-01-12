@@ -1110,7 +1110,7 @@ JavaThread* ObjectSynchronizer::get_lock_owner(ThreadsList * t_list, Handle h_ob
     // used by this comparison so the ObjectMonitor* is usable here.
     ObjectMonitor* monitor = mark.monitor();
     assert(monitor != NULL, "monitor should be non-null");
-    return monitor->owning_thread(t_list);
+    return Threads::owning_thread_from_monitor(t_list, monitor);
   }
 
   return NULL;

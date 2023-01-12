@@ -33,9 +33,7 @@
 #include "runtime/park.hpp"
 #include "runtime/perfDataTypes.hpp"
 
-class JavaThread;
 class ObjectMonitor;
-class ThreadsList;
 
 // ObjectWaiter serves as a "proxy" or surrogate thread.
 // TODO-FIXME: Eliminate ObjectWaiter and use the thread-specific
@@ -278,8 +276,6 @@ class ObjectMonitor : public CHeapObj<mtObjectMonitor> {
   void set_owner_from_anonymous(Thread* owner) {
     set_owner_from(ANONYMOUS_OWNER, owner);
   }
-
-  JavaThread* owning_thread(ThreadsList* t_list);
 
   // Simply get _next_om field.
   ObjectMonitor* next_om() const;

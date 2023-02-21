@@ -184,8 +184,23 @@ inline size_t HeapRegion::block_size(const HeapWord *addr) const {
 
   if (block_is_obj(addr)) {
     oop obj = cast_to_oop(addr);
+    assert(G1CollectedHeap::heap()->collector_state()->in_full_gc() || !obj->is_forwarded(), "need to resolve object");
+    return obj->size();
+  }
+
+  return block_size_using_bitmap(addr, G1CollectedHeap::heap()->concurrent_mark()->prev_mark_bitmap());
+}
+
+inline size_t HeapRegion::block_size_resolve(const HeapWord *addr) const {
+  if (addr == top()) {
+    return pointer_delta(end(), addr);
+  }
+
+  if (block_is_obj(addr)) {
+    oop obj = cast_to_oop(addr);
 #ifdef _LP64
-    if (obj->is_forwarded() && CompressedKlassPointers::is_null(obj->mark().narrow_klass())) {
+    assert(!G1CollectedHeap::heap()->collector_state()->in_full_gc(), "don't resolve in full GC");
+    if (obj->is_forwarded()) {
       obj = obj->forwardee();
     }
 #endif

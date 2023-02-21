@@ -184,6 +184,7 @@ public:
   // Returns the object size for all valid block starts
   // and the amount of unallocated words if called on top()
   size_t block_size(const HeapWord* p) const;
+  size_t block_size_resolve(const HeapWord* p) const;
 
   // Scans through the region using the bitmap to determine what
   // objects to call size_t ApplyToMarkedClosure::apply(oop) for.

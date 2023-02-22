@@ -145,6 +145,9 @@ private:
   // This version synchronizes with other calls to par_allocate_impl().
   inline HeapWord* par_allocate_impl(size_t min_word_size, size_t desired_word_size, size_t* actual_word_size);
 
+  template<bool RESOLVE>
+  void object_iterate(ObjectClosure* blk);
+
 public:
   HeapWord* block_start(const void* p);
 
@@ -183,8 +186,9 @@ public:
 
   // Returns the object size for all valid block starts
   // and the amount of unallocated words if called on top()
+  template<bool RESOLVE>
   size_t block_size(const HeapWord* p) const;
-  size_t block_size_resolve(const HeapWord* p) const;
+  size_t block_size(const HeapWord* p) const;
 
   // Scans through the region using the bitmap to determine what
   // objects to call size_t ApplyToMarkedClosure::apply(oop) for.

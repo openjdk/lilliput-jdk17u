@@ -861,7 +861,7 @@ HeapWord* HeapRegion::cross_threshold(HeapWord* start, HeapWord* end) {
 }
 
 template<bool RESOLVE>
-void HeapRegion::object_iterate(ObjectClosure* blk) {
+void HeapRegion::object_iterate_impl(ObjectClosure* blk) {
   HeapWord* p = bottom();
   while (p < top()) {
     if (block_is_obj(p)) {
@@ -873,8 +873,8 @@ void HeapRegion::object_iterate(ObjectClosure* blk) {
 
 void HeapRegion::object_iterate(ObjectClosure* blk) {
   if (G1CollectedHeap::heap()->collector_state()->in_full_gc()) {
-    object_iterate<false>(blk);
+    object_iterate_impl<false>(blk);
   } else {
-    object_iterate<true>(blk);
+    object_iterate_impl<true>(blk);
   }
 }

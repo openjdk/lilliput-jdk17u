@@ -146,7 +146,7 @@ private:
   inline HeapWord* par_allocate_impl(size_t min_word_size, size_t desired_word_size, size_t* actual_word_size);
 
   template<bool RESOLVE>
-  void object_iterate(ObjectClosure* blk);
+  void object_iterate_impl(ObjectClosure* blk);
 
 public:
   HeapWord* block_start(const void* p);

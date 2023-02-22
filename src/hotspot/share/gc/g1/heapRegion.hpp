@@ -186,8 +186,7 @@ public:
 
   // Returns the object size for all valid block starts
   // and the amount of unallocated words if called on top()
-  template<bool RESOLVE>
-  size_t block_size(const HeapWord* p) const;
+  template<bool RESOLVE = false>
   size_t block_size(const HeapWord* p) const;
 
   // Scans through the region using the bitmap to determine what

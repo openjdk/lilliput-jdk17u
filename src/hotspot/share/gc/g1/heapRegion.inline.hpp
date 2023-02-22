@@ -196,10 +196,6 @@ inline size_t HeapRegion::block_size(const HeapWord *addr) const {
   return block_size_using_bitmap(addr, G1CollectedHeap::heap()->concurrent_mark()->prev_mark_bitmap());
 }
 
-inline size_t HeapRegion::block_size(const HeapWord *addr) const {
-  return block_size<false>(addr);
-}
-
 inline void HeapRegion::reset_compaction_top_after_compaction() {
   set_top(compaction_top());
   _compaction_top = bottom();

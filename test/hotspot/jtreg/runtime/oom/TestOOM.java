@@ -24,8 +24,16 @@
 /*
  * @test
  * @bug 8303027
+ * @requires vm.bits == "64"
  * @summary Test that we're failing with OOME and not with VM crash
  * @run main/othervm -Xmx1g -XX:-UseCompressedOops TestOOM
+ */
+/*
+ * @test
+ * @bug 8303027
+ * @requires vm.bits == "32"
+ * @summary Test that we're failing with OOME and not with VM crash
+ * @run main/othervm -Xmx1g TestOOM
  */
 public class TestOOM {
     public static void main(String[] args) {

@@ -25,7 +25,7 @@
  * @test
  * @bug 8303027
  * @summary Test that we're failing with OOME and not with VM crash
- * @run main/othervm -Xmx10g TestOOM
+ * @run main/othervm -Xmx1g -XX:-UseCompressedOops TestOOM
  */
 public class TestOOM {
     public static void main(String[] args) {

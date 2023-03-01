@@ -1582,6 +1582,21 @@ void Arguments::set_use_compressed_klass_ptrs() {
       }
     }
   }
+
+  if (UseCompactObjectHeaders) {
+    if (!UseCompressedClassPointers) {
+      // Lilliput requires compressed class pointers.
+      if (FLAG_IS_CMDLINE(UseCompressedClassPointers)) {
+        // If user specifies -UseCompressedClassPointers, it should be reverted with
+        // a warning.
+        warning("Lilliput reqires compressed class pointers.");
+      }
+    }
+    FLAG_SET_DEFAULT(UseCompressedClassPointers, true);
+  }
+  if (!UseCompactObjectHeaders) {
+    FLAG_SET_DEFAULT(UseSharedSpaces, false);
+  }
 #endif // _LP64
 }
 
@@ -3153,12 +3168,20 @@ jint Arguments::finalize_vm_init_args(bool patch_mod_javabase) {
   UNSUPPORTED_OPTION(ShowRegistersOnAssert);
 #endif // CAN_SHOW_REGISTERS_ON_ASSERT
 
-  // Lilliput requires fast-locking.
-  FLAG_SET_DEFAULT(UseFastLocking, true);
-  FLAG_SET_DEFAULT(UseBiasedLocking, false);
+  if (UseCompactObjectHeaders) {
+    if (!UseFastLocking) {
+      // Lilliput requires fast-locking.
+      FLAG_SET_DEFAULT(UseFastLocking, true);
+    }
+    if (UseBiasedLocking) {
+      FLAG_SET_DEFAULT(UseBiasedLocking, false);
+    }
 #ifdef _LP64
-  FLAG_SET_DEFAULT(UseCompressedClassPointers, true);
+    if (!UseCompressedClassPointers) {
+      FLAG_SET_DEFAULT(UseCompressedClassPointers, true);
+    }
 #endif
+  }
   return JNI_OK;
 }
 

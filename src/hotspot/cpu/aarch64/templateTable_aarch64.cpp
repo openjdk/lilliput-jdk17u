@@ -3555,12 +3555,14 @@ void TemplateTable::_new() {
 
     // initialize object header only.
     __ bind(initialize_header);
-    if (UseCompactObjectHeaders) {
+    if (UseBiasedLocking || UseCompactObjectHeaders) {
       __ ldr(rscratch1, Address(r4, Klass::prototype_header_offset()));
-      __ str(rscratch1, Address(r0, oopDesc::mark_offset_in_bytes()));
     } else {
       __ mov(rscratch1, (intptr_t)markWord::prototype().value());
-      __ str(rscratch1, Address(r0, oopDesc::mark_offset_in_bytes()));
+    }
+    __ str(rscratch1, Address(r0, oopDesc::mark_offset_in_bytes()));
+    if (!UseCompactObjectHeaders) {
+      __ store_klass_gap(r0, zr);  // zero klass gap for compressed oops
       __ store_klass(r0, r4);      // store klass last
     }
     {

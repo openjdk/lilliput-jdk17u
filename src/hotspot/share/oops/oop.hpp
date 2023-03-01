@@ -322,7 +322,7 @@ public:
 
   static int klass_offset_in_bytes()     {
 #ifdef _LP64
-if (UseCompactObjectHeaders) {
+    if (UseCompactObjectHeaders) {
       STATIC_ASSERT(markWord::klass_shift % 8 == 0);
       return mark_offset_in_bytes() + markWord::klass_shift / 8;
     } else

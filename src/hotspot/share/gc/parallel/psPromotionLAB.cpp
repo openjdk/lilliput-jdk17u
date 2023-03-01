@@ -83,12 +83,12 @@ void PSPromotionLAB::flush() {
   // so they can always fill with an array.
   HeapWord* tlab_end = end() + filler_header_size;
   typeArrayOop filler_oop = (typeArrayOop) cast_to_oop(top());
-#ifdef _LP64
-  filler_oop->set_mark(Universe::intArrayKlassObj()->prototype_header());
-#else
-  filler_oop->set_mark(markWord::prototype());
-  filler_oop->set_klass(Universe::intArrayKlassObj());
-#endif
+  if (UseCompactObjectHeaders) {
+    filler_oop->set_mark(Universe::intArrayKlassObj()->prototype_header());
+  } else {
+    filler_oop->set_mark(markWord::prototype());
+    filler_oop->set_klass(Universe::intArrayKlassObj());
+  }
   int header_size = (arrayOopDesc::base_offset_in_bytes(T_INT) + BytesPerWord) / BytesPerWord;
   const size_t array_length =
     pointer_delta(tlab_end, top()) - header_size;

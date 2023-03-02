@@ -52,7 +52,6 @@ inline bool Klass::is_loader_alive() const {
 }
 
 inline void Klass::set_prototype_header(markWord header) {
-  assert(UseCompactObjectHeaders, "only with compact headers");
   _prototype_header = header;
 }
 

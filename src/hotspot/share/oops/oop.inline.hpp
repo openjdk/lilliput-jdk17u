@@ -36,7 +36,7 @@
 #include "oops/oopsHierarchy.hpp"
 #include "runtime/atomic.hpp"
 #include "runtime/globals.hpp"
-#include "runtime/objectMonitor.hpp"
+#include "runtime/objectMonitor.inline.hpp"
 #include "utilities/align.hpp"
 #include "utilities/debug.hpp"
 #include "utilities/macros.hpp"

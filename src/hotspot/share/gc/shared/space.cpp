@@ -485,8 +485,7 @@ void ContiguousSpace::object_iterate(ObjectClosure* blk) {
 void ContiguousSpace::object_iterate_from(HeapWord* mark, ObjectClosure* blk) {
   while (mark < top()) {
     blk->do_object(cast_to_oop(mark));
-    oop obj = cast_to_oop(mark);
-    mark += obj->size();
+    mark += cast_to_oop(mark)->size();
   }
 }
 

@@ -177,5 +177,7 @@ vmTestbase/nsk/jdwp/ThreadReference/ForceEarlyReturn/forceEarlyReturn001/forceEa
 # Disabled because Lilliput forces +UseCompressedClassPointers
 gc/arguments/TestCompressedClassFlags.java 1234567 generic-all
 
-# Dispabled because Lilliput forces -UseBiasedLocking
+# Disabled because Lilliput forces -UseBiasedLocking
 runtime/logging/BiasedLockingTest.java 1234567 generic-all
+# Because of -UseBiasedLocking, too
+compiler/rtm/cli/TestUseRTMLockingOptionWithBiasedLocking.java 1234567 generic-x64,generic-i586

@@ -293,7 +293,8 @@ class markWord {
     return markWord(value() | unlocked_value);
   }
   bool has_locker() const {
-    return !UseFastLocking && ((value() & lock_mask_in_place) == locked_value);
+    assert(LockingMode == LM_LEGACY, "should only be called with legacy stack locking");
+    return (value() & lock_mask_in_place) == locked_value;
   }
   BasicLock* locker() const {
     assert(has_locker(), "check");
@@ -301,7 +302,8 @@ class markWord {
   }
 
   bool is_fast_locked() const {
-    return UseFastLocking && ((value() & lock_mask_in_place) == locked_value);
+    assert(LockingMode == LM_LIGHTWEIGHT, "should only be called with new lightweight locking");
+    return (value() & lock_mask_in_place) == locked_value;
   }
   markWord set_fast_locked() const {
     return markWord(value() & ~lock_mask_in_place);
@@ -311,14 +313,14 @@ class markWord {
     return ((value() & monitor_value) != 0);
   }
   ObjectMonitor* monitor() const {
-    assert(has_monitor(), "check");
+   assert(has_monitor(), "check");
     // Use xor instead of &~ to provide one extra tag-bit check.
     return (ObjectMonitor*) (value() ^ monitor_value);
   }
   bool has_displaced_mark_helper() const {
     intptr_t lockbits = value() & lock_mask_in_place;
-    return UseFastLocking ? lockbits == monitor_value   // monitor?
-                          : (lockbits & unlocked_value) == 0; // monitor | stack-locked?
+    return LockingMode == LM_LIGHTWEIGHT  ? lockbits == monitor_value   // monitor?
+                                          : (lockbits & unlocked_value) == 0; // monitor | stack-locked?
   }
   markWord displaced_mark_helper() const;
   void set_displaced_mark_helper(markWord m) const;

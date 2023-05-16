@@ -3159,14 +3159,11 @@ jint Arguments::finalize_vm_init_args(bool patch_mod_javabase) {
     warning("Compact object headers require compressed class pointers. Disabling compact object headers.");
     FLAG_SET_DEFAULT(UseCompactObjectHeaders, false);
   }
-  if (UseCompactObjectHeaders) {
-    if (!UseFastLocking) {
-      // Lilliput requires fast-locking.
-      FLAG_SET_DEFAULT(UseFastLocking, true);
-    }
-    if (UseBiasedLocking) {
-      FLAG_SET_DEFAULT(UseBiasedLocking, false);
-    }
+  if (UseCompactObjectHeaders && LockingMode == LM_LEGACY) {
+    FLAG_SET_DEFAULT(LockingMode, LM_LIGHTWEIGHT);
+  }
+  if (UseCompactObjectHeaders && UseBiasedLocking) {
+    FLAG_SET_DEFAULT(UseBiasedLocking, false);
   }
   if (!UseCompactObjectHeaders) {
     FLAG_SET_DEFAULT(UseSharedSpaces, false);

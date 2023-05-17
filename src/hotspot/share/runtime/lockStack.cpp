@@ -41,7 +41,7 @@ LockStack::LockStack(JavaThread* jt) :
   _top(lock_stack_base_offset), _base() {
 #ifdef ASSERT
   for (int i = 0; i < CAPACITY; i++) {
-    _base[i] = nullptr;
+    _base[i] = NULL;
   }
 #endif
 }
@@ -66,13 +66,13 @@ void LockStack::verify(const char* msg) const {
   if (SafepointSynchronize::is_at_safepoint() || (Thread::current()->is_Java_thread() && is_owning_thread())) {
     int top = to_index(_top);
     for (int i = 0; i < top; i++) {
-      assert(_base[i] != nullptr, "no zapped before top");
+      assert(_base[i] != NULL, "no zapped before top");
       for (int j = i + 1; j < top; j++) {
         assert(_base[i] != _base[j], "entries must be unique: %s", msg);
       }
     }
     for (int i = top; i < CAPACITY; i++) {
-      assert(_base[i] == nullptr, "only zapped entries after top: i: %d, top: %d, entry: " PTR_FORMAT, i, top, p2i(_base[i]));
+      assert(_base[i] == NULL, "only zapped entries after top: i: %d, top: %d, entry: " PTR_FORMAT, i, top, p2i(_base[i]));
     }
   }
 }

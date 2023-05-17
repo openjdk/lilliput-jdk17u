@@ -755,7 +755,7 @@ JRT_ENTRY_NO_ASYNC(void, InterpreterRuntime::monitorenter_obj(JavaThread* curren
   Handle h_obj(current, cast_to_oop(obj));
   assert(Universe::heap()->is_in_or_null(h_obj()),
          "must be null or an object");
-  ObjectSynchronizer::enter(h_obj, nullptr, current);
+  ObjectSynchronizer::enter(h_obj, NULL, current);
   return;
 JRT_END
 

@@ -279,7 +279,7 @@ private:
   void*     try_set_owner_from(void* old_value, void* new_value);
 
   void set_owner_anonymous() {
-    set_owner_from(nullptr, anon_owner_ptr());
+    set_owner_from(NULL, anon_owner_ptr());
   }
 
   bool is_owner_anonymous() const {

@@ -767,27 +767,10 @@ void C2_MacroAssembler::fast_unlock(Register objReg, Register boxReg, Register t
   jccb  (Assembler::notZero, DONE_LABEL);
   movptr(boxReg, Address(tmpReg, OM_OFFSET_NO_MONITOR_VALUE_TAG(EntryList)));
   orptr(boxReg, Address(tmpReg, OM_OFFSET_NO_MONITOR_VALUE_TAG(cxq)));
-  jccb  (Assembler::notZero, CheckSucc);
+  jccb  (Assembler::notZero, DONE_LABEL);
   movptr(Address(tmpReg, OM_OFFSET_NO_MONITOR_VALUE_TAG(owner)), NULL_WORD);
   jmpb  (DONE_LABEL);
 
-  if (LockingMode != LM_MONITOR) {
-    bind (Stacked);
-    if (LockingMode == LM_LIGHTWEIGHT) {
-      mov(boxReg, tmpReg);
-      fast_unlock_impl(objReg, boxReg, tmpReg, DONE_LABEL);
-      xorl(tmpReg, tmpReg);
-    } else if (LockingMode == LM_LEGACY) {
-      // It's not inflated and it's not recursively stack-locked and it's not biased.
-      // It must be stack-locked.
-      // Try to reset the header to displaced header.
-      // The "box" value on the stack is stable, so we can reload
-      // and be assured we observe the same value as above.
-      movptr(tmpReg, Address(boxReg, 0));
-      lock();
-      cmpxchgptr(tmpReg, Address(objReg, oopDesc::mark_offset_in_bytes())); // Uses RAX which is box
-    }
-  }
   // Intention fall-thru into DONE_LABEL
 
   // DONE_LABEL is a hot target - we'd really like to place it at the
@@ -878,7 +861,7 @@ void C2_MacroAssembler::fast_unlock(Register objReg, Register boxReg, Register t
       mov(boxReg, tmpReg);
       fast_unlock_impl(objReg, boxReg, tmpReg, DONE_LABEL);
       xorl(tmpReg, tmpReg);
-    } else {
+    } else if (LockingMode == LM_LEGACY) {
       movptr(tmpReg, Address (boxReg, 0));      // re-fetch
       lock();
       cmpxchgptr(tmpReg, Address(objReg, oopDesc::mark_offset_in_bytes())); // Uses RAX which is box

@@ -3168,6 +3168,9 @@ jint Arguments::finalize_vm_init_args(bool patch_mod_javabase) {
       FLAG_SET_DEFAULT(UseBiasedLocking, false);
     }
   }
+  if (UseCompactObjectHeaders && !UseAltGCForwarding) {
+    FLAG_SET_DEFAULT(UseAltGCForwarding, true);
+  }
   if (!UseCompactObjectHeaders) {
     FLAG_SET_DEFAULT(UseSharedSpaces, false);
   }

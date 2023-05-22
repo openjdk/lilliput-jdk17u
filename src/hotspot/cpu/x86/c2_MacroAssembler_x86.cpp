@@ -515,7 +515,7 @@ void C2_MacroAssembler::fast_lock(Register objReg, Register boxReg, Register tmp
 
   movptr(tmpReg, Address(objReg, oopDesc::mark_offset_in_bytes()));          // [FETCH]
   testptr(tmpReg, markWord::monitor_value); // inflated vs stack-locked|neutral|biased
-  jccb(Assembler::notZero, IsInflated);
+  jcc(Assembler::notZero, IsInflated);
 
   if (LockingMode == LM_MONITOR) {
     // Clear ZF so that we take the slow path at the DONE label. objReg is known to be not 0.
@@ -708,7 +708,7 @@ void C2_MacroAssembler::fast_unlock(Register objReg, Register boxReg, Register t
   // It's inflated.
   if (LockingMode == LM_LIGHTWEIGHT) {
     // If the owner is ANONYMOUS, we need to fix it.
-    testb(Address(tmpReg, OM_OFFSET_NO_MONITOR_VALUE_TAG(owner)), (int) (intptr_t) ObjectMonitor::ANONYMOUS_OWNER);
+    testb(Address(tmpReg, OM_OFFSET_NO_MONITOR_VALUE_TAG(owner)), (int32_t) ObjectMonitor::ANONYMOUS_OWNER);
 #ifdef _LP64
     if (!Compile::current()->output()->in_scratch_emit_size()) {
       C2HandleAnonOMOwnerStub* stub = new (Compile::current()->comp_arena()) C2HandleAnonOMOwnerStub(tmpReg, boxReg);

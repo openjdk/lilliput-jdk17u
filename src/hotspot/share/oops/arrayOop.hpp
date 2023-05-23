@@ -133,6 +133,7 @@ class arrayOopDesc : public oopDesc {
   // Returns the header size in words aligned to the requirements of the
   // array object type.
   static int header_size(BasicType type) {
+    assert(!UseCompactObjectHeaders, "Don't use this with compact headers");
     size_t typesize_in_bytes = header_size_in_bytes();
     return (int)(element_type_should_be_aligned(type)
       ? align_object_offset(typesize_in_bytes/HeapWordSize)

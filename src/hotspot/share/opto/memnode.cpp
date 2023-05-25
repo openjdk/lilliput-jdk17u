@@ -2115,7 +2115,7 @@ const Type* LoadNode::Value(PhaseGVN* phase) const {
   }
 
   Node* alloc = is_new_object_mark_load(phase);
-  if (alloc != NULL && !(alloc->Opcode() == Op_Allocate && UseBiasedLocking)) {
+  if (alloc != NULL && !(alloc->Opcode() == Op_Allocate && UseBiasedLocking) && !UseCompactObjectHeaders) {
     return TypeX::make(markWord::prototype().value());
   }
 

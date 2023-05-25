@@ -1847,6 +1847,13 @@ Node *LoadNode::Ideal(PhaseGVN *phase, bool can_reshape) {
 const Type*
 LoadNode::load_array_final_field(const TypeKlassPtr *tkls,
                                  ciKlass* klass) const {
+  if (UseCompactObjectHeaders) {
+    if (tkls->offset() == in_bytes(Klass::prototype_header_offset())) {
+      // The field is Klass::_prototype_header.  Return its (constant) value.
+      assert(this->Opcode() == Op_LoadX, "must load a proper type from _prototype_header");
+      return TypeX::make(klass->prototype_header());
+    }
+  }
   if (tkls->offset() == in_bytes(Klass::modifier_flags_offset())) {
     // The field is Klass::_modifier_flags.  Return its (constant) value.
     // (Folds up the 2nd indirection in aClassConstant.getModifiers().)
@@ -2016,6 +2023,13 @@ const Type* LoadNode::Value(PhaseGVN* phase) const {
         // (Folds up type checking code.)
         assert(Opcode() == Op_LoadI, "must load an int from _super_check_offset");
         return TypeInt::make(klass->super_check_offset());
+      }
+      if (UseCompactObjectHeaders) {
+        if (tkls->offset() == in_bytes(Klass::prototype_header_offset())) {
+          // The field is Klass::_prototype_header. Return its (constant) value.
+          assert(this->Opcode() == Op_LoadX, "must load a proper type from _prototype_header");
+          return TypeX::make(klass->prototype_header());
+        }
       }
       // Compute index into primary_supers array
       juint depth = (tkls->offset() - in_bytes(Klass::primary_supers_offset())) / sizeof(Klass*);

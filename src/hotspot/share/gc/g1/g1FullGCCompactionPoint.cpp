@@ -25,7 +25,6 @@
 #include "precompiled.hpp"
 #include "gc/g1/g1FullGCCompactionPoint.hpp"
 #include "gc/g1/heapRegion.hpp"
-#include "gc/shared/slidingForwarding.inline.hpp"
 #include "oops/oop.inline.hpp"
 #include "utilities/debug.hpp"
 
@@ -92,48 +91,6 @@ void G1FullGCCompactionPoint::switch_region() {
   // Get the next region and re-initialize the values.
   _current_region = next_region();
   initialize_values(true);
-}
-
-void G1FullGCCompactionPoint::forward(oop object, size_t size) {
-  assert(_current_region != NULL, "Must have been initialized");
-
-  // Ensure the object fit in the current region.
-  while (!object_will_fit(size)) {
-    switch_region();
-  }
-
-  // Store a forwarding pointer if the object should be moved.
-  if (cast_from_oop<HeapWord*>(object) != _compaction_top) {
-    SlidingForwarding::forward_to(object, cast_to_oop(_compaction_top));
-  } else {
-    assert(!SlidingForwarding::is_forwarded(object), "should not be forwarded");
-    /*
-    if (object->forwardee() != NULL) {
-      // Object should not move but mark-word is used so it looks like the
-      // object is forwarded. Need to clear the mark and it's no problem
-      // since it will be restored by preserved marks. There is an exception
-      // with BiasedLocking, in this case forwardee() will return NULL
-      // even if the mark-word is used. This is no problem since
-      // forwardee() will return NULL in the compaction phase as well.
-      object->init_mark();
-    } else {
-      // Make sure object has the correct mark-word set or that it will be
-      // fixed when restoring the preserved marks.
-      assert(object->mark() == markWord::prototype_for_klass(object->klass()) || // Correct mark
-             object->mark_must_be_preserved() || // Will be restored by PreservedMarksSet
-             (UseBiasedLocking && object->has_bias_pattern()), // Will be restored by BiasedLocking
-             "should have correct prototype obj: " PTR_FORMAT " mark: " PTR_FORMAT " prototype: " PTR_FORMAT,
-             p2i(object), object->mark().value(), markWord::prototype_for_klass(object->klass()).value());
-    }
-    assert(object->forwardee() == NULL, "should be forwarded to NULL");
-    */
-  }
-
-  // Update compaction values.
-  _compaction_top += size;
-  if (_compaction_top > _threshold) {
-    _threshold = _current_region->cross_threshold(_compaction_top - size, _compaction_top);
-  }
 }
 
 void G1FullGCCompactionPoint::add(HeapRegion* hr) {

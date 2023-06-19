@@ -431,7 +431,7 @@ public:
   // If the forwarding crosses "cp->threshold", invokes the "cross_threshold"
   // function of the then-current compaction space, and updates "cp->threshold
   // accordingly".
-  template<bool ALT_FWD>
+  template <bool ALT_FWD>
   HeapWord* forward(oop q, size_t size, CompactPoint* cp,
                     HeapWord* compact_top);
 

@@ -26,7 +26,7 @@
 #include "gc/g1/g1CollectedHeap.hpp"
 #include "gc/g1/g1ConcurrentMarkBitMap.inline.hpp"
 #include "gc/g1/g1FullCollector.inline.hpp"
-#include "gc/g1/g1FullGCCompactionPoint.inline.hpp"
+#include "gc/g1/g1FullGCCompactionPoint.hpp"
 #include "gc/g1/g1FullGCMarker.hpp"
 #include "gc/g1/g1FullGCOopClosures.inline.hpp"
 #include "gc/g1/g1FullGCPrepareTask.hpp"
@@ -157,18 +157,18 @@ void G1FullGCPrepareTask::G1CalculatePointersClosure::reset_region_metadata(Heap
   }
 }
 
-template<bool ALT_FWD>
+template <bool ALT_FWD>
 G1FullGCPrepareTask::G1PrepareCompactLiveClosure<ALT_FWD>::G1PrepareCompactLiveClosure(G1FullGCCompactionPoint* cp) :
     _cp(cp) { }
 
-template<bool ALT_FWD>
+template <bool ALT_FWD>
 size_t G1FullGCPrepareTask::G1PrepareCompactLiveClosure<ALT_FWD>::apply(oop object) {
   size_t size = object->size();
   _cp->forward<ALT_FWD>(object, size);
   return size;
 }
 
-template<bool ALT_FWD>
+template <bool ALT_FWD>
 size_t G1FullGCPrepareTask::G1RePrepareClosure<ALT_FWD>::apply(oop obj) {
   // We only re-prepare objects forwarded within the current region, so
   // skip objects that are already forwarded to another region.
@@ -209,7 +209,7 @@ void G1FullGCPrepareTask::G1CalculatePointersClosure::prepare_for_compaction(Hea
   prepare_for_compaction_work(_cp, hr);
 }
 
-template<bool ALT_FWD>
+template <bool ALT_FWD>
 void G1FullGCPrepareTask::prepare_serial_compaction_impl() {
   GCTraceTime(Debug, gc, phases) debug("Phase 2: Prepare Serial Compaction", collector()->scope()->timer());
   // At this point we know that no regions were completely freed by

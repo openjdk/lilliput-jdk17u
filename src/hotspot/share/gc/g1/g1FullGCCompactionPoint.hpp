@@ -51,8 +51,8 @@ public:
   bool is_initialized();
   void initialize(HeapRegion* hr, bool init_threshold);
   void update();
-  template<bool ALT_FWD>
-  inline void forward(oop object, size_t size);
+  template <bool ALT_FWD>
+  void forward(oop object, size_t size);
   void add(HeapRegion* hr);
 
   HeapRegion* remove_last();

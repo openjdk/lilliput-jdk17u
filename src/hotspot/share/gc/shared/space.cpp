@@ -347,7 +347,7 @@ void CompactibleSpace::clear(bool mangle_space) {
   _compaction_top = bottom();
 }
 
-template<bool ALT_FWD>
+template <bool ALT_FWD>
 HeapWord* CompactibleSpace::forward(oop q, size_t size,
                                     CompactPoint* cp, HeapWord* compact_top) {
   // q is alive

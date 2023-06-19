@@ -59,7 +59,7 @@ public:
   }
 };
 
-template<bool ALT_FWD>
+template <bool ALT_FWD>
 size_t G1FullGCCompactTask::G1CompactRegionClosure<ALT_FWD>::apply(oop obj) {
   size_t size = obj->size();
   if (!SlidingForwarding::is_forwarded(obj)) {

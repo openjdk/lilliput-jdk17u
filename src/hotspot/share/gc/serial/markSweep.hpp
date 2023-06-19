@@ -135,12 +135,12 @@ class MarkSweep : AllStatic {
 
   static void preserve_mark(oop p, markWord mark);
                                 // Save the mark word so it can be restored later
-  template<bool ALT_FWD>
+  template <bool ALT_FWD>
   static void adjust_marks();   // Adjust the pointers in the preserved marks table
   static void adjust_marks();   // Adjust the pointers in the preserved marks table
   static void restore_marks();  // Restore the marks that we saved in preserve_mark
 
-  template<bool ALT_FWD>
+  template <bool ALT_FWD>
   static int adjust_pointers(oop obj);
 
   static void follow_stack();   // Empty marking stack.
@@ -185,7 +185,7 @@ public:
   }
 };
 
-template<bool ALT_FWD>
+template <bool ALT_FWD>
 class AdjustPointerClosure: public BasicOopIterateClosure {
  public:
   template <typename T> void do_oop_work(T* p);
@@ -205,7 +205,7 @@ public:
     _mark = mark;
   }
 
-  template<bool ALT_FWD>
+  template <bool ALT_FWD>
   void adjust_pointer();
   void restore();
 };

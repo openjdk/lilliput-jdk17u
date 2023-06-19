@@ -143,7 +143,7 @@ template <class T> inline void MarkSweep::follow_root(T* p) {
 void MarkSweep::FollowRootClosure::do_oop(oop* p)       { follow_root(p); }
 void MarkSweep::FollowRootClosure::do_oop(narrowOop* p) { follow_root(p); }
 
-template<bool ALT_FWD>
+template <bool ALT_FWD>
 void PreservedMark::adjust_pointer() {
   MarkSweep::adjust_pointer<ALT_FWD>(&_obj);
 }
@@ -173,7 +173,7 @@ void MarkSweep::set_ref_processor(ReferenceProcessor* rp) {
   mark_and_push_closure.set_ref_discoverer(_ref_processor);
 }
 
-template<bool ALT_FWD>
+template <bool ALT_FWD>
 void MarkSweep::adjust_marks() {
   assert( _preserved_oop_stack.size() == _preserved_mark_stack.size(),
          "inconsistent preserved oop stacks");

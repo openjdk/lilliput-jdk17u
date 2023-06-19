@@ -54,7 +54,7 @@ private:
 
   inline bool should_preserve_mark(oop obj, markWord m) const;
 
-  template<bool ALT_FWD>
+  template <bool ALT_FWD>
   void adjust_during_full_gc_impl();
 
 public:

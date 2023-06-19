@@ -301,7 +301,7 @@ void ShenandoahFullGC::phase1_mark_heap() {
   heap->parallel_cleaning(true /* full_gc */);
 }
 
-template<bool ALT_FWD>
+template <bool ALT_FWD>
 class ShenandoahPrepareForCompactionObjectClosure : public ObjectClosure {
 private:
   PreservedMarks*          const _preserved_marks;
@@ -381,7 +381,35 @@ private:
   ShenandoahHeap*           const _heap;
   ShenandoahHeapRegionSet** const _worker_slices;
 
-  template<bool ALT_FWD>
+public:
+  ShenandoahPrepareForCompactionTask(PreservedMarksSet *preserved_marks, ShenandoahHeapRegionSet **worker_slices) :
+    AbstractGangTask("Shenandoah Prepare For Compaction"),
+    _preserved_marks(preserved_marks),
+    _heap(ShenandoahHeap::heap()), _worker_slices(worker_slices) {
+  }
+
+  static bool is_candidate_region(ShenandoahHeapRegion* r) {
+    // Empty region: get it into the slice to defragment the slice itself.
+    // We could have skipped this without violating correctness, but we really
+    // want to compact all live regions to the start of the heap, which sometimes
+    // means moving them into the fully empty regions.
+    if (r->is_empty()) return true;
+
+    // Can move the region, and this is not the humongous region. Humongous
+    // moves are special cased here, because their moves are handled separately.
+    return r->is_stw_move_allowed() && !r->is_humongous();
+  }
+
+  void work(uint worker_id) {
+    if (UseAltGCForwarding) {
+      work_impl<true>(worker_id);
+    } else {
+      work_impl<false>(worker_id);
+    }
+  }
+
+private:
+  template <bool ALT_FWD>
   void work_impl(uint worker_id) {
     ShenandoahParallelWorkerSession worker_session(worker_id);
     ShenandoahHeapRegionSet* slice = _worker_slices[worker_id];
@@ -422,35 +450,9 @@ private:
       r->set_new_top(r->bottom());
     }
   }
-public:
-  ShenandoahPrepareForCompactionTask(PreservedMarksSet *preserved_marks, ShenandoahHeapRegionSet **worker_slices) :
-    AbstractGangTask("Shenandoah Prepare For Compaction"),
-    _preserved_marks(preserved_marks),
-    _heap(ShenandoahHeap::heap()), _worker_slices(worker_slices) {
-  }
-
-  static bool is_candidate_region(ShenandoahHeapRegion* r) {
-    // Empty region: get it into the slice to defragment the slice itself.
-    // We could have skipped this without violating correctness, but we really
-    // want to compact all live regions to the start of the heap, which sometimes
-    // means moving them into the fully empty regions.
-    if (r->is_empty()) return true;
-
-    // Can move the region, and this is not the humongous region. Humongous
-    // moves are special cased here, because their moves are handled separately.
-    return r->is_stw_move_allowed() && !r->is_humongous();
-  }
-
-  void work(uint worker_id) {
-    if (UseAltGCForwarding) {
-      work_impl<true>(worker_id);
-    } else {
-      work_impl<false>(worker_id);
-    }
-  }
 };
 
-template<bool ALT_FWD>
+template <bool ALT_FWD>
 void ShenandoahFullGC::calculate_target_humongous_objects_impl() {
   ShenandoahHeap* heap = ShenandoahHeap::heap();
 
@@ -744,7 +746,7 @@ void ShenandoahFullGC::phase2_calculate_target_addresses(ShenandoahHeapRegionSet
   }
 }
 
-template<bool ALT_FWD>
+template <bool ALT_FWD>
 class ShenandoahAdjustPointersClosure : public MetadataVisitingOopIterateClosure {
 private:
   ShenandoahHeap* const _heap;
@@ -772,7 +774,7 @@ public:
   void do_oop(narrowOop* p) { do_oop_work(p); }
 };
 
-template<bool ALT_FWD>
+template <bool ALT_FWD>
 class ShenandoahAdjustPointersObjectClosure : public ObjectClosure {
 private:
   ShenandoahHeap* const _heap;
@@ -793,18 +795,6 @@ private:
   ShenandoahHeap*          const _heap;
   ShenandoahRegionIterator       _regions;
 
-  template<bool ALT_FWD>
-  void work_impl(uint worker_id) {
-    ShenandoahParallelWorkerSession worker_session(worker_id);
-    ShenandoahAdjustPointersObjectClosure<ALT_FWD> obj_cl;
-    ShenandoahHeapRegion* r = _regions.next();
-    while (r != NULL) {
-      if (!r->is_humongous_continuation() && r->has_live()) {
-        _heap->marked_object_iterate(r, &obj_cl);
-      }
-      r = _regions.next();
-    }
-  }
 public:
   ShenandoahAdjustPointersTask() :
     AbstractGangTask("Shenandoah Adjust Pointers"),
@@ -818,6 +808,20 @@ public:
       work_impl<false>(worker_id);
     }
   }
+
+private:
+  template <bool ALT_FWD>
+  void work_impl(uint worker_id) {
+    ShenandoahParallelWorkerSession worker_session(worker_id);
+    ShenandoahAdjustPointersObjectClosure<ALT_FWD> obj_cl;
+    ShenandoahHeapRegion* r = _regions.next();
+    while (r != NULL) {
+      if (!r->is_humongous_continuation() && r->has_live()) {
+        _heap->marked_object_iterate(r, &obj_cl);
+      }
+      r = _regions.next();
+    }
+  }
 };
 
 class ShenandoahAdjustRootPointersTask : public AbstractGangTask {
@@ -825,7 +829,7 @@ private:
   ShenandoahRootAdjuster* _rp;
   PreservedMarksSet* _preserved_marks;
 
-  template<bool ALT_FWD>
+  template <bool ALT_FWD>
   void work_impl(uint worker_id) {
     ShenandoahParallelWorkerSession worker_session(worker_id);
     ShenandoahAdjustPointersClosure<ALT_FWD> cl;
@@ -871,7 +875,7 @@ void ShenandoahFullGC::phase3_update_references() {
   workers->run_task(&adjust_pointers_task);
 }
 
-template<bool ALT_FWD>
+template <bool ALT_FWD>
 class ShenandoahCompactObjectsClosure : public ObjectClosure {
 private:
   ShenandoahHeap* const _heap;
@@ -899,7 +903,7 @@ private:
   ShenandoahHeap* const _heap;
   ShenandoahHeapRegionSet** const _worker_slices;
 
-  template<bool ALT_FWD>
+  template <bool ALT_FWD>
   void work_impl(uint worker_id) {
     ShenandoahParallelWorkerSession worker_session(worker_id);
     ShenandoahHeapRegionSetIterator slice(_worker_slices[worker_id]);
@@ -981,7 +985,7 @@ public:
   }
 };
 
-template<bool ALT_FWD>
+template <bool ALT_FWD>
 void ShenandoahFullGC::compact_humongous_objects_impl() {
   // Compact humongous regions, based on their fwdptr objects.
   //

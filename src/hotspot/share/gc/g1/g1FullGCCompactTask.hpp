@@ -48,7 +48,7 @@ public:
   void work(uint worker_id);
   void serial_compaction();
 
-  template<bool ALT_FWD>
+  template <bool ALT_FWD>
   class G1CompactRegionClosure : public StackObj {
     G1CMBitMap* _bitmap;
 

@@ -830,6 +830,13 @@ private:
   ShenandoahRootAdjuster* _rp;
   PreservedMarksSet* _preserved_marks;
 
+public:
+  ShenandoahAdjustRootPointersTask(ShenandoahRootAdjuster* rp, PreservedMarksSet* preserved_marks) :
+    AbstractGangTask("Shenandoah Adjust Root Pointers"),
+    _rp(rp),
+    _preserved_marks(preserved_marks) {}
+
+private:
   template <bool ALT_FWD>
   void work_impl(uint worker_id) {
     ShenandoahParallelWorkerSession worker_session(worker_id);
@@ -837,12 +844,8 @@ private:
     _rp->roots_do(worker_id, &cl);
     _preserved_marks->get(worker_id)->adjust_during_full_gc();
   }
-public:
-  ShenandoahAdjustRootPointersTask(ShenandoahRootAdjuster* rp, PreservedMarksSet* preserved_marks) :
-    AbstractGangTask("Shenandoah Adjust Root Pointers"),
-    _rp(rp),
-    _preserved_marks(preserved_marks) {}
 
+public:
   void work(uint worker_id) {
     if (UseAltGCForwarding) {
       work_impl<true>(worker_id);

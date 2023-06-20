@@ -136,7 +136,7 @@ class MarkSweep : AllStatic {
   static void preserve_mark(oop p, markWord mark);
                                 // Save the mark word so it can be restored later
   template <bool ALT_FWD>
-  static void adjust_marks();   // Adjust the pointers in the preserved marks table
+  static void adjust_marks_impl();   // Adjust the pointers in the preserved marks table
   static void adjust_marks();   // Adjust the pointers in the preserved marks table
   static void restore_marks();  // Restore the marks that we saved in preserve_mark
 

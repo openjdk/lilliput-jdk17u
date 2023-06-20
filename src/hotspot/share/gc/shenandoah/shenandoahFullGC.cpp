@@ -801,14 +801,6 @@ public:
     _heap(ShenandoahHeap::heap()) {
   }
 
-  void work(uint worker_id) {
-    if (UseAltGCForwarding) {
-      work_impl<true>(worker_id);
-    } else {
-      work_impl<false>(worker_id);
-    }
-  }
-
 private:
   template <bool ALT_FWD>
   void work_impl(uint worker_id) {
@@ -820,6 +812,15 @@ private:
         _heap->marked_object_iterate(r, &obj_cl);
       }
       r = _regions.next();
+    }
+  }
+
+public:
+  void work(uint worker_id) {
+    if (UseAltGCForwarding) {
+      work_impl<true>(worker_id);
+    } else {
+      work_impl<false>(worker_id);
     }
   }
 };
@@ -903,6 +904,14 @@ private:
   ShenandoahHeap* const _heap;
   ShenandoahHeapRegionSet** const _worker_slices;
 
+public:
+  ShenandoahCompactObjectsTask(ShenandoahHeapRegionSet** worker_slices) :
+    AbstractGangTask("Shenandoah Compact Objects"),
+    _heap(ShenandoahHeap::heap()),
+    _worker_slices(worker_slices) {
+  }
+
+private:
   template <bool ALT_FWD>
   void work_impl(uint worker_id) {
     ShenandoahParallelWorkerSession worker_session(worker_id);
@@ -919,13 +928,8 @@ private:
       r = slice.next();
     }
   }
-public:
-  ShenandoahCompactObjectsTask(ShenandoahHeapRegionSet** worker_slices) :
-    AbstractGangTask("Shenandoah Compact Objects"),
-    _heap(ShenandoahHeap::heap()),
-    _worker_slices(worker_slices) {
-  }
 
+public:
   void work(uint worker_id) {
     if (UseAltGCForwarding) {
       work_impl<true>(worker_id);

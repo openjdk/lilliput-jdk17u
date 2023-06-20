@@ -174,7 +174,7 @@ void MarkSweep::set_ref_processor(ReferenceProcessor* rp) {
 }
 
 template <bool ALT_FWD>
-void MarkSweep::adjust_marks() {
+void MarkSweep::adjust_marks_impl() {
   assert( _preserved_oop_stack.size() == _preserved_mark_stack.size(),
          "inconsistent preserved oop stacks");
 
@@ -193,9 +193,9 @@ void MarkSweep::adjust_marks() {
 
 void MarkSweep::adjust_marks() {
   if (UseAltGCForwarding) {
-    adjust_marks<true>();
+    adjust_marks_impl<true>();
   } else {
-    adjust_marks<false>();
+    adjust_marks_impl<false>();
   }
 }
 

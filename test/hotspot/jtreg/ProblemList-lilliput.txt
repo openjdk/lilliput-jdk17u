@@ -24,7 +24,7 @@
 #
 # These tests are problematic when +UseCompactObjectHeaders is enabled.
 # The test exclusions are for the cases when we are sure the tests would fail
-# for a known implementation reasons.
+# for the known and innocuous implementation reasons.
 #
 
 
@@ -102,5 +102,3 @@ vmTestbase/nsk/jvmti/unit/FollowReferences/followref001/TestDescription.java    
 vmTestbase/nsk/jvmti/unit/FollowReferences/followref002/TestDescription.java                        8283710 generic-all
 vmTestbase/nsk/jvmti/unit/FollowReferences/followref003/TestDescription.java                        8283710 generic-all
 vmTestbase/nsk/jvmti/unit/heap/HeapWalkTests/TestDescription.java                                   8283710 generic-all
-
->>>>>>> lilliput

@@ -27,3 +27,13 @@
 # for the known and innocuous implementation reasons.
 #
 
+#
+# Lilliput forces specific UseCompressedClassPointers mode
+#
+gc/arguments/TestCompressedClassFlags.java                      1234567 generic-all
+
+#
+# Lilliput forces specific UseBiasedLocking mode
+#
+runtime/logging/BiasedLockingTest.java                          1234567 generic-all
+compiler/rtm/cli/TestUseRTMLockingOptionWithBiasedLocking.java  1234567 generic-x64,generic-i586

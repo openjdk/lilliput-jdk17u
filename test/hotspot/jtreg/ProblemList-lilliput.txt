@@ -29,6 +29,20 @@
 
 
 #
+# Tests require specific UseCompressedClassPointers mode
+#
+gc/arguments/TestCompressedClassFlags.java                      1234567 generic-all
+
+
+#
+# Tests require specific UseBiasedLocking mode
+#
+runtime/logging/BiasedLockingTest.java                                              8256425 generic-all
+compiler/rtm/cli/TestUseRTMLockingOptionWithBiasedLocking.java                      8256425 generic-x64,generic-i586
+jdk/jfr/event/runtime/TestBiasedLockRevocationEvents.java                           8256425 generic-all
+
+
+#
 # JFR heap iteration is unsafe, disabled and prints warnings
 #
 jdk/jfr/event/oldobject/TestAllocationTime.java                                     8275415 generic-all
@@ -63,12 +77,6 @@ jdk/jfr/startupargs/TestStartupMessage.java                                     
 
 
 #
-# Biased locking is forcefully enabled
-#
-jdk/jfr/event/runtime/TestBiasedLockRevocationEvents.java                           8256425 generic-all
-
-
-#
 # JVMTI heap iteration is unsafe, disabled and prints warnings
 #
 serviceability/jvmti/Heap/IterateHeapWithEscapeAnalysisEnabled.java                                 8283710 generic-all
@@ -94,3 +102,5 @@ vmTestbase/nsk/jvmti/unit/FollowReferences/followref001/TestDescription.java    
 vmTestbase/nsk/jvmti/unit/FollowReferences/followref002/TestDescription.java                        8283710 generic-all
 vmTestbase/nsk/jvmti/unit/FollowReferences/followref003/TestDescription.java                        8283710 generic-all
 vmTestbase/nsk/jvmti/unit/heap/HeapWalkTests/TestDescription.java                                   8283710 generic-all
+
+>>>>>>> lilliput

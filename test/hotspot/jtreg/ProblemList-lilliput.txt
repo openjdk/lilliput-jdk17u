@@ -79,6 +79,9 @@ jdk/jfr/startupargs/TestStartupMessage.java                                     
 #
 # JVMTI heap iteration is unsafe, disabled and prints warnings
 #
+com/sun/jdi/ReferrersTest.java                                                                      8308411 generic-all
+com/sun/jdi/InstancesTest.java                                                                      8308411 generic-all
+com/sun/jdi/EATests.java#id0                                                                        8308411 generic-all
 serviceability/jvmti/Heap/IterateHeapWithEscapeAnalysisEnabled.java                                 8308411 generic-all
 vmTestbase/nsk/jvmti/IterateOverObjectsReachableFromObject/iterobjreachobj001/TestDescription.java  8308411 generic-all
 vmTestbase/nsk/jvmti/IterateOverObjectsReachableFromObject/iterobjreachobj002/TestDescription.java  8308411 generic-all

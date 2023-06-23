@@ -31,7 +31,7 @@
 #
 # Tests require specific UseCompressedClassPointers mode
 #
-gc/arguments/TestCompressedClassFlags.java                      1234567 generic-all
+gc/arguments/TestCompressedClassFlags.java                                          1234567 generic-all
 
 
 #
@@ -40,6 +40,16 @@ gc/arguments/TestCompressedClassFlags.java                      1234567 generic-
 runtime/logging/BiasedLockingTest.java                                              8256425 generic-all
 compiler/rtm/cli/TestUseRTMLockingOptionWithBiasedLocking.java                      8256425 generic-x64,generic-i586
 jdk/jfr/event/runtime/TestBiasedLockRevocationEvents.java                           8256425 generic-all
+
+
+#
+# Test library tests do not like non-whitelisted +UCOH flag
+#
+testlibrary_tests/ir_framework/tests/TestCheckedTests.java                          1234567 generic-all
+testlibrary_tests/ir_framework/tests/TestBadFormat.java                             1234567 generic-all
+testlibrary_tests/ir_framework/tests/TestRunTests.java                              1234567 generic-all
+testlibrary_tests/ir_framework/tests/TestScenarios.java                             1234567 generic-all
+testlibrary_tests/ir_framework/tests/TestIRMatching.java                            1234567 generic-all
 
 
 #

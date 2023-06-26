@@ -391,7 +391,7 @@ HeapWord* HeapRegion::oops_on_memregion_seq_iterate_careful(MemRegion mr,
   while (true) {
     oop obj = cast_to_oop(cur);
     assert(oopDesc::is_oop(obj, true), "Not an oop at " PTR_FORMAT, p2i(cur));
-    assert(obj->klass_or_null() != NULL,
+    assert(UseCompactObjectHeaders || obj->klass_or_null() != NULL,
            "Unparsable heap at " PTR_FORMAT, p2i(cur));
 
     size_t size;
@@ -400,6 +400,9 @@ HeapWord* HeapRegion::oops_on_memregion_seq_iterate_careful(MemRegion mr,
 
     cur += size;
     if (!is_dead) {
+      assert(!UseCompactObjectHeaders || obj->klass_or_null() != NULL,
+           "Unparsable heap at " PTR_FORMAT, p2i(cur));
+
       // Process live object's references.
 
       // Non-objArrays are usually marked imprecise at the object

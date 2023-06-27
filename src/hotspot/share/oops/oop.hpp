@@ -72,6 +72,9 @@ public:
 
   inline markWord resolve_mark() const;
 
+  // Returns the prototype mark that should be used for this object.
+  inline markWord prototype_mark() const;
+
   // Used only to re-initialize the mark word (e.g., of promoted
   // objects during a GC) -- requires a valid klass pointer
   inline void init_mark();
@@ -108,6 +111,16 @@ public:
   // Sometimes (for complicated concurrency-related reasons), it is useful
   // to be able to figure out the size of an object knowing its klass.
   inline int size_given_klass(Klass* klass);
+
+  // The following set of methods is used to access the mark-word and related
+  // properties when the object may be forwarded. Be careful where and when
+  // using this method. It assumes that the forwardee is installed in
+  // the header as a plain pointer (or self-forwarded). In particular,
+  // those methods can not deal with the sliding-forwarding that is used
+  // in Serial, G1 and Shenandoah full-GCs.
+  inline Klass*   forward_safe_klass() const;
+  inline size_t   forward_safe_size();
+  inline void     forward_safe_init_mark();
 
   // type test operations (inlined in oop.inline.hpp)
   inline bool is_instance()            const;

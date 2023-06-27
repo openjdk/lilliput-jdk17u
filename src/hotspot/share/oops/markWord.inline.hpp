@@ -77,6 +77,15 @@ inline markWord markWord::prototype_for_klass(const Klass* klass) {
 }
 
 #ifdef _LP64
+markWord markWord::actual_mark() const {
+  assert(UseCompactObjectHeaders, "only safe when using compact headers");
+  if (has_displaced_mark_helper()) {
+    return displaced_mark_helper();
+  } else {
+    return *this;
+  }
+}
+
 narrowKlass markWord::narrow_klass() const {
   assert(UseCompactObjectHeaders, "only used with compact object headers");
   return narrowKlass(value() >> klass_shift);

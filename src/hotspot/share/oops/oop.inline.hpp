@@ -101,14 +101,7 @@ markWord oopDesc::prototype_mark() const {
 }
 
 void oopDesc::init_mark() {
-#ifdef _LP64
-  if (UseCompactObjectHeaders) {
-    markWord header = resolve_mark();
-    assert(UseCompressedClassPointers, "expect compressed klass pointers");
-    set_mark(markWord((header.value() & markWord::klass_mask_in_place) | markWord::prototype().value()));
-  } else
-#endif
-  set_mark(markWord::prototype());
+  set_mark(markWord::prototype_for_klass(klass()));
 }
 
 Klass* oopDesc::klass() const {
@@ -300,7 +293,7 @@ void oopDesc::forward_safe_init_mark() {
   if (UseCompactObjectHeaders) {
     set_mark(forward_safe_klass()->prototype_header());
   } else {
-    set_mark(markWord::prototype());
+    init_mark();
   }
 }
 

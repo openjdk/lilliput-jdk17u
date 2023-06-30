@@ -388,6 +388,7 @@ class markWord {
   }
 
 #ifdef _LP64
+  inline markWord actual_mark() const;
   inline Klass* klass() const;
   inline Klass* klass_or_null() const;
   inline Klass* safe_klass() const;

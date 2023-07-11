@@ -371,4 +371,13 @@ public:
   DEBUG_ONLY(bool get_UseG1GC();)
 };
 
+// Used by vmStructs when CompactObjectHeaders are enabled
+class fakeOopDesc {
+private:
+  union _metadata {
+    Klass *_klass;
+    narrowKlass _compressed_klass;
+  } _metadata;
+}
+
 #endif // SHARE_OOPS_OOP_HPP

@@ -3211,7 +3211,9 @@ void VMStructs::compact_headers_overrides() {
     // We cannot allow SA and other facilities to poke into VM internal fields
     // expecting the class pointers there. This will crash in the best case,
     // or yield incorrect execution in the worst case. This code hides the
-    // risky fields from SA by renaming them.
+    // risky fields from external code by replacing their original container
+    // type to a fake one. The fake type should exist for VMStructs verification
+    // code to work.
 
     size_t len = localHotSpotVMStructsLength();
     for (size_t off = 0; off < len; off++) {
@@ -3223,7 +3225,7 @@ void VMStructs::compact_headers_overrides() {
       if (strcmp(e->typeName, "oopDesc") == 0) {
         if ((strcmp(e->fieldName, "_metadata._klass") == 0) ||
             (strcmp(e->fieldName, "_metadata._compressed_klass") == 0)) {
-          e->typeName = "cannot_touch_this_with_compact_headers_oopDesc";
+          e->typeName = "fakeOopDesc";
         }
       }
     }

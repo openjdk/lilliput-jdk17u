@@ -3223,7 +3223,6 @@ void VMStructs::compact_headers_overrides() {
       if (strcmp(e->typeName, "oopDesc") == 0) {
         if ((strcmp(e->fieldName, "_metadata._klass") == 0) ||
             (strcmp(e->fieldName, "_metadata._compressed_klass") == 0)) {
-          printf("typeName: %s, fieldName: %s, OVERRIDING\n", e->typeName, e->fieldName);
           e->typeName = "cannot_touch_this_with_compact_headers_oopDesc";
         }
       }

@@ -1242,6 +1242,8 @@ typedef HashtableEntry<InstanceKlass*, mtClass>  KlassHashtableEntry;
       declare_type(objArrayOopDesc, arrayOopDesc)                         \
     declare_type(instanceOopDesc, oopDesc)                                \
                                                                           \
+  declare_toplevel_type(fakeOopDesc)                                      \
+                                                                          \
   /**************************************************/                    \
   /* MetadataOopDesc hierarchy (NOTE: some missing) */                    \
   /**************************************************/                    \
@@ -3207,26 +3209,26 @@ void vmStructs_init() {
 #endif // ASSERT
 
 void VMStructs::compact_headers_overrides() {
-  if (UseCompactObjectHeaders) {
-    // We cannot allow SA and other facilities to poke into VM internal fields
-    // expecting the class pointers there. This will crash in the best case,
-    // or yield incorrect execution in the worst case. This code hides the
-    // risky fields from external code by replacing their original container
-    // type to a fake one. The fake type should exist for VMStructs verification
-    // code to work.
+  if (!UseCompactObjectHeaders) return;
 
-    size_t len = localHotSpotVMStructsLength();
-    for (size_t off = 0; off < len; off++) {
-      VMStructEntry* e = &localHotSpotVMStructs[off];
-      if (e == nullptr) continue;
-      if (e->typeName == nullptr) continue;
-      if (e->fieldName == nullptr) continue;
+  // We cannot allow SA and other facilities to poke into VM internal fields
+  // expecting the class pointers there. This will crash in the best case,
+  // or yield incorrect execution in the worst case. This code hides the
+  // risky fields from external code by replacing their original container
+  // type to a fake one. The fake type should exist for VMStructs verification
+  // code to work.
 
-      if (strcmp(e->typeName, "oopDesc") == 0) {
-        if ((strcmp(e->fieldName, "_metadata._klass") == 0) ||
-            (strcmp(e->fieldName, "_metadata._compressed_klass") == 0)) {
-          e->typeName = "fakeOopDesc";
-        }
+  size_t len = localHotSpotVMStructsLength();
+  for (size_t off = 0; off < len; off++) {
+    VMStructEntry* e = &localHotSpotVMStructs[off];
+    if (e == nullptr) continue;
+    if (e->typeName == nullptr) continue;
+    if (e->fieldName == nullptr) continue;
+
+    if (strcmp(e->typeName, "oopDesc") == 0) {
+      if ((strcmp(e->fieldName, "_metadata._klass") == 0) ||
+          (strcmp(e->fieldName, "_metadata._compressed_klass") == 0)) {
+        e->typeName = "fakeOopDesc";
       }
     }
   }

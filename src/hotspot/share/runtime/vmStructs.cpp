@@ -142,6 +142,16 @@
 #include "opto/vectornode.hpp"
 #endif // COMPILER2
 
+// Used by VMStructs when CompactObjectHeaders are enabled.
+// Must match the relevant parts from the real oopDesc.
+class fakeOopDesc {
+private:
+  union _metadata {
+    Klass*      _klass;
+    narrowKlass _compressed_klass;
+  } _metadata;
+};
+
 // Note: the cross-product of (c1, c2, product, nonproduct, ...),
 // (nonstatic, static), and (unchecked, checked) has not been taken.
 // Only the macros currently needed have been defined.

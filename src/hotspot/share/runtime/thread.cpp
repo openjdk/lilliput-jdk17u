@@ -2837,7 +2837,9 @@ jint Threads::create_vm(JavaVMInitArgs* args, bool* canTryAgain) {
 
   // Should happen before any agent attaches and pokes into vmStructs
 #if INCLUDE_VM_STRUCTS
-  VMStructs::compact_headers_overrides();
+  if (UseCompactObjectHeaders) {
+    VMStructs::compact_headers_overrides();
+  }
 #endif
 
   // Launch -agentlib/-agentpath and converted -Xrun agents

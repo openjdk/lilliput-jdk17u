@@ -3219,7 +3219,7 @@ void vmStructs_init() {
 #endif // ASSERT
 
 void VMStructs::compact_headers_overrides() {
-  if (!UseCompactObjectHeaders) return;
+  assert(UseCompactObjectHeaders, "Should have been checked before");
 
   // We cannot allow SA and other facilities to poke into VM internal fields
   // expecting the class pointers there. This will crash in the best case,

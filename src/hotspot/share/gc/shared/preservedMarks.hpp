@@ -32,7 +32,6 @@
 
 class AbstractGangTask;
 class PreservedMarksSet;
-class SlidingForwarding;
 class WorkGang;
 
 class PreservedMarks {
@@ -55,6 +54,9 @@ private:
 
   inline bool should_preserve_mark(oop obj, markWord m) const;
 
+  template <bool ALT_FWD>
+  void adjust_during_full_gc_impl();
+
 public:
   size_t size() const { return _stack.size(); }
   inline void push(oop obj, markWord m);
@@ -64,11 +66,7 @@ public:
   void restore();
   // Iterate over the stack, adjust all preserved marks according
   // to their forwarding location stored in the mark.
-  // TODO: This method is unused, except in the gunit test. Change the test
-  // to exercise the updated method below instead, and remove this one.
   void adjust_during_full_gc();
-
-  void adjust_during_full_gc(const SlidingForwarding* const forwarding);
 
   void restore_and_increment(volatile size_t* const _total_size_addr);
   inline static void init_forwarded_mark(oop obj);

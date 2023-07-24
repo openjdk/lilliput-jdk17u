@@ -26,7 +26,6 @@
 #include "compiler/compileBroker.hpp"
 #include "gc/serial/markSweep.inline.hpp"
 #include "gc/shared/collectedHeap.inline.hpp"
-#include "gc/shared/genCollectedHeap.hpp"
 #include "gc/shared/gcTimer.hpp"
 #include "gc/shared/gcTrace.hpp"
 #include "gc/shared/gc_globals.hpp"
@@ -144,8 +143,9 @@ template <class T> inline void MarkSweep::follow_root(T* p) {
 void MarkSweep::FollowRootClosure::do_oop(oop* p)       { follow_root(p); }
 void MarkSweep::FollowRootClosure::do_oop(narrowOop* p) { follow_root(p); }
 
-void PreservedMark::adjust_pointer(const SlidingForwarding* const forwarding) {
-  MarkSweep::adjust_pointer(forwarding, &_obj);
+template <bool ALT_FWD>
+void PreservedMark::adjust_pointer() {
+  MarkSweep::adjust_pointer<ALT_FWD>(&_obj);
 }
 
 void PreservedMark::restore() {
@@ -173,22 +173,29 @@ void MarkSweep::set_ref_processor(ReferenceProcessor* rp) {
   mark_and_push_closure.set_ref_discoverer(_ref_processor);
 }
 
-void MarkSweep::adjust_marks() {
-  const SlidingForwarding* const forwarding = GenCollectedHeap::heap()->forwarding();
-
+template <bool ALT_FWD>
+void MarkSweep::adjust_marks_impl() {
   assert( _preserved_oop_stack.size() == _preserved_mark_stack.size(),
          "inconsistent preserved oop stacks");
 
   // adjust the oops we saved earlier
   for (size_t i = 0; i < _preserved_count; i++) {
-    _preserved_marks[i].adjust_pointer(forwarding);
+    _preserved_marks[i].adjust_pointer<ALT_FWD>();
   }
 
   // deal with the overflow stack
   StackIterator<oop, mtGC> iter(_preserved_oop_stack);
   while (!iter.is_empty()) {
     oop* p = iter.next_addr();
-    adjust_pointer(forwarding, p);
+    adjust_pointer<ALT_FWD>(p);
+  }
+}
+
+void MarkSweep::adjust_marks() {
+  if (UseAltGCForwarding) {
+    adjust_marks_impl<true>();
+  } else {
+    adjust_marks_impl<false>();
   }
 }
 

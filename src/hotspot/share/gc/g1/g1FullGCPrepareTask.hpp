@@ -34,7 +34,6 @@
 
 class G1CMBitMap;
 class G1FullCollector;
-class SlidingForwarding;
 
 class G1FullGCPrepareTask : public G1FullGCTask {
 protected:
@@ -42,6 +41,10 @@ protected:
   HeapRegionClaimer _hrclaimer;
 
   void set_freed_regions();
+
+private:
+  template <bool ALT_FWD>
+  void prepare_serial_compaction_impl();
 
 public:
   G1FullGCPrepareTask(G1FullCollector* collector);
@@ -75,15 +78,16 @@ protected:
     bool freed_regions();
   };
 
+  template <bool ALT_FWD>
   class G1PrepareCompactLiveClosure : public StackObj {
     G1FullGCCompactionPoint* _cp;
-    SlidingForwarding* const _forwarding;
 
   public:
     G1PrepareCompactLiveClosure(G1FullGCCompactionPoint* cp);
     size_t apply(oop object);
   };
 
+  template <bool ALT_FWD>
   class G1RePrepareClosure : public StackObj {
     G1FullGCCompactionPoint* _cp;
     HeapRegion* _current;

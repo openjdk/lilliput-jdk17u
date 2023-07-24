@@ -1411,6 +1411,7 @@ bool ObjectMarker::_needs_reset = true;  // need to reset mark bits by default
 void ObjectMarker::init() {
   assert(Thread::current()->is_VM_thread(), "must be VMThread");
   assert(SafepointSynchronize::is_at_safepoint(), "must be at a safepoint");
+  assert(!UseCompactObjectHeaders, "should not be here: broken with compact object headers");
 
   // prepare heap for iteration
   Universe::heap()->ensure_parsability(false);  // no need to retire TLABs
@@ -1467,10 +1468,7 @@ inline void ObjectMarker::mark(oop o) {
   }
 
   // mark the object
-  if (mark.has_displaced_mark_helper()) {
-    mark = mark.displaced_mark_helper();
-  }
-  o->set_mark(mark.set_marked());
+  o->set_mark(markWord::prototype().set_marked());
 }
 
 // return true if object is marked
@@ -2958,6 +2956,12 @@ bool VM_HeapWalkOperation::visit(oop o) {
 }
 
 void VM_HeapWalkOperation::doit() {
+  if (UseCompactObjectHeaders) {
+    // Cannot perform a heap walk safely. See JDK-8283710 and related issues.
+    log_warning(jvmti)("Requested a JVMTI heap walk with compact object headers enabled. This is not supported yet.");
+    return;
+  }
+
   ResourceMark rm;
   ObjectMarkerController marker;
   ClassFieldMapCacheMark cm;

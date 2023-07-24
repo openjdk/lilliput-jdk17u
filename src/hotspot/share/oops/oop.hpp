@@ -72,6 +72,9 @@ public:
 
   inline markWord resolve_mark() const;
 
+  // Returns the prototype mark that should be used for this object.
+  inline markWord prototype_mark() const;
+
   // Used only to re-initialize the mark word (e.g., of promoted
   // objects during a GC) -- requires a valid klass pointer
   inline void init_mark();
@@ -85,6 +88,8 @@ public:
   static inline void release_set_klass(HeapWord* mem, Klass* k);
 
   // For klass field compression
+  inline int klass_gap() const;
+  inline void set_klass_gap(int z);
   static inline void set_klass_gap(HeapWord* mem, int z);
 
   // size of object header, aligned to platform wordSize
@@ -106,6 +111,20 @@ public:
   // Sometimes (for complicated concurrency-related reasons), it is useful
   // to be able to figure out the size of an object knowing its klass.
   inline int size_given_klass(Klass* klass);
+
+  // The following set of methods is used to access the mark-word and related
+  // properties when the object may be forwarded. Be careful where and when
+  // using this method. It assumes that the forwardee is installed in
+  // the header as a plain pointer (or self-forwarded). In particular,
+  // those methods can not deal with the sliding-forwarding that is used
+  // in Serial, G1 and Shenandoah full-GCs.
+private:
+  inline Klass*   forward_safe_klass_impl(markWord m) const;
+public:
+  inline Klass*   forward_safe_klass() const;
+  inline size_t   forward_safe_size();
+  inline Klass*   forward_safe_klass(markWord m) const;
+  inline void     forward_safe_init_mark();
 
   // type test operations (inlined in oop.inline.hpp)
   inline bool is_instance()            const;
@@ -257,7 +276,6 @@ public:
   void verify_forwardee(oop forwardee) NOT_DEBUG_RETURN;
 
   inline void forward_to(oop p);
-  inline bool cas_forward_to(oop p, markWord compare, atomic_memory_order order = memory_order_conservative);
   inline void forward_to_self();
 
   // Like "forward_to", but inserts the forwarding pointer atomically.

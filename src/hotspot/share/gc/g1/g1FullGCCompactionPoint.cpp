@@ -94,7 +94,8 @@ void G1FullGCCompactionPoint::switch_region() {
   initialize_values(true);
 }
 
-void G1FullGCCompactionPoint::forward(SlidingForwarding* const forwarding, oop object, size_t size) {
+template <bool ALT_FWD>
+void G1FullGCCompactionPoint::forward(oop object, size_t size) {
   assert(_current_region != NULL, "Must have been initialized");
 
   // Ensure the object fit in the current region.
@@ -104,9 +105,9 @@ void G1FullGCCompactionPoint::forward(SlidingForwarding* const forwarding, oop o
 
   // Store a forwarding pointer if the object should be moved.
   if (cast_from_oop<HeapWord*>(object) != _compaction_top) {
-    forwarding->forward_to(object, cast_to_oop(_compaction_top));
+    SlidingForwarding::forward_to<ALT_FWD>(object, cast_to_oop(_compaction_top));
   } else {
-    assert(!object->is_forwarded(), "should not be forwarded");
+    assert(!SlidingForwarding::is_forwarded(object), "should not be forwarded");
     /*
     if (object->forwardee() != NULL) {
       // Object should not move but mark-word is used so it looks like the
@@ -135,6 +136,9 @@ void G1FullGCCompactionPoint::forward(SlidingForwarding* const forwarding, oop o
     _threshold = _current_region->cross_threshold(_compaction_top - size, _compaction_top);
   }
 }
+
+template void G1FullGCCompactionPoint::forward<true>(oop object, size_t size);
+template void G1FullGCCompactionPoint::forward<false>(oop object, size_t size);
 
 void G1FullGCCompactionPoint::add(HeapRegion* hr) {
   _compaction_regions->append(hr);

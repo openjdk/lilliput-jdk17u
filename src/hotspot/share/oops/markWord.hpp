@@ -25,6 +25,7 @@
 #ifndef SHARE_OOPS_MARKWORD_HPP
 #define SHARE_OOPS_MARKWORD_HPP
 
+#include "gc/shared/gc_globals.hpp"
 #include "metaprogramming/integralConstant.hpp"
 #include "metaprogramming/primitiveConversions.hpp"
 #include "oops/oopsHierarchy.hpp"
@@ -41,6 +42,7 @@
 //
 //  64 bits:
 //  --------
+//  unused:25 hash:31 -->| unused_gap:1   age:4    biased_lock:1 lock:2 (normal object)
 //  JavaThread*:54 epoch:2 unused_gap:1   age:4    biased_lock:1 lock:2 (biased object)
 //
 //  64 bits (with compact headers):
@@ -314,7 +316,7 @@ class markWord {
     return ((value() & monitor_value) != 0);
   }
   ObjectMonitor* monitor() const {
-   assert(has_monitor(), "check");
+    assert(has_monitor(), "check");
     // Use xor instead of &~ to provide one extra tag-bit check.
     return (ObjectMonitor*) (value() ^ monitor_value);
   }
@@ -386,6 +388,7 @@ class markWord {
   }
 
 #ifdef _LP64
+  inline markWord actual_mark() const;
   inline Klass* klass() const;
   inline Klass* klass_or_null() const;
   inline Klass* safe_klass() const;
@@ -411,13 +414,18 @@ class markWord {
   // Recover address of oop from encoded form used in mark
   inline void* decode_pointer() { if (UseBiasedLocking && has_bias_pattern()) return NULL; return (void*)clear_lock_bits().value(); }
 
+#ifdef _LP64
   inline bool self_forwarded() const {
-    return mask_bits(value(), self_forwarded_mask_in_place) != 0;
+    bool self_fwd = mask_bits(value(), self_forwarded_mask_in_place) != 0;
+    assert(!self_fwd || UseAltGCForwarding, "Only set self-fwd bit when using alt GC forwarding");
+    return self_fwd;
   }
 
   inline markWord set_self_forwarded() const {
+    assert(UseAltGCForwarding, "Only call this with alt GC forwarding");
     return markWord(value() | self_forwarded_mask_in_place | marked_value);
   }
+#endif
 };
 
 // Support atomic operations.

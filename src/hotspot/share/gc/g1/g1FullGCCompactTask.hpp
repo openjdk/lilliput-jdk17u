@@ -33,7 +33,6 @@
 
 class G1CollectedHeap;
 class G1CMBitMap;
-class SlidingForwarding;
 
 class G1FullGCCompactTask : public G1FullGCTask {
 protected:
@@ -49,14 +48,12 @@ public:
   void work(uint worker_id);
   void serial_compaction();
 
+  template <bool ALT_FWD>
   class G1CompactRegionClosure : public StackObj {
     G1CMBitMap* _bitmap;
-    const SlidingForwarding* const _forwarding;
 
   public:
-    G1CompactRegionClosure(G1CMBitMap* bitmap) :
-      _bitmap(bitmap),
-      _forwarding(G1CollectedHeap::heap()->forwarding()) { }
+    G1CompactRegionClosure(G1CMBitMap* bitmap) : _bitmap(bitmap) { }
     size_t apply(oop object);
   };
 };

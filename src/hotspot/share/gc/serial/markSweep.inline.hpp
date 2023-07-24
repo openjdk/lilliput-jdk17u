@@ -27,8 +27,8 @@
 
 #include "gc/serial/markSweep.hpp"
 
-#include "gc/shared/slidingForwarding.inline.hpp"
 #include "classfile/classLoaderData.inline.hpp"
+#include "gc/shared/slidingForwarding.inline.hpp"
 #include "memory/universe.hpp"
 #include "oops/markWord.inline.hpp"
 #include "oops/access.inline.hpp"
@@ -41,19 +41,7 @@ inline void MarkSweep::mark_object(oop obj) {
   // some marks may contain information we need to preserve so we store them away
   // and overwrite the mark.  We'll restore it at the end of markSweep.
   markWord mark = obj->mark();
-#ifdef _LP64
-  if (UseCompactObjectHeaders) {
-    markWord real_mark = mark;
-    if (real_mark.has_displaced_mark_helper()) {
-      real_mark = real_mark.displaced_mark_helper();
-    }
-    Klass* klass = real_mark.klass();
-    obj->set_mark(klass->prototype_header().set_marked());
-  } else
-#endif
-  {
-    obj->set_mark(markWord::prototype().set_marked());
-  }
+  obj->set_mark(obj->prototype_mark().set_marked());
 
   if (obj->mark_must_be_preserved(mark)) {
     preserve_mark(obj, mark);
@@ -87,15 +75,15 @@ inline void MarkAndPushClosure::do_oop(narrowOop* p)         { do_oop_work(p); }
 inline void MarkAndPushClosure::do_klass(Klass* k)           { MarkSweep::follow_klass(k); }
 inline void MarkAndPushClosure::do_cld(ClassLoaderData* cld) { MarkSweep::follow_cld(cld); }
 
-template <class T> inline void MarkSweep::adjust_pointer(const SlidingForwarding* const forwarding, T* p) {
+template <bool ALT_FWD, class T>
+inline void MarkSweep::adjust_pointer(T* p) {
   T heap_oop = RawAccess<>::oop_load(p);
   if (!CompressedOops::is_null(heap_oop)) {
     oop obj = CompressedOops::decode_not_null(heap_oop);
     assert(Universe::heap()->is_in(obj), "should be in heap");
 
-    markWord header = obj->mark();
-    if (header.is_marked()) {
-      oop new_obj = forwarding->forwardee(obj);
+    if (SlidingForwarding::is_forwarded(obj)) {
+      oop new_obj = SlidingForwarding::forwardee<ALT_FWD>(obj);
       assert(new_obj != NULL, "must be forwarded");
       assert(is_object_aligned(new_obj), "oop must be aligned");
       RawAccess<IS_NOT_NULL>::oop_store(p, new_obj);
@@ -103,15 +91,20 @@ template <class T> inline void MarkSweep::adjust_pointer(const SlidingForwarding
   }
 }
 
+template <bool ALT_FWD>
 template <typename T>
-void AdjustPointerClosure::do_oop_work(T* p)           { MarkSweep::adjust_pointer(_forwarding, p); }
-inline void AdjustPointerClosure::do_oop(oop* p)       { do_oop_work(p); }
-inline void AdjustPointerClosure::do_oop(narrowOop* p) { do_oop_work(p); }
+void AdjustPointerClosure<ALT_FWD>::do_oop_work(T* p)           { MarkSweep::adjust_pointer<ALT_FWD>(p); }
 
+template <bool ALT_FWD>
+inline void AdjustPointerClosure<ALT_FWD>::do_oop(oop* p)       { do_oop_work(p); }
 
-inline int MarkSweep::adjust_pointers(const SlidingForwarding* const forwarding, oop obj) {
-  AdjustPointerClosure cl(forwarding);
-  return obj->oop_iterate_size(&cl);
+template <bool ALT_FWD>
+inline void AdjustPointerClosure<ALT_FWD>::do_oop(narrowOop* p) { do_oop_work(p); }
+
+template <bool ALT_FWD>
+inline int MarkSweep::adjust_pointers(oop obj) {
+  AdjustPointerClosure<ALT_FWD> adjust_pointer_closure;
+  return obj->oop_iterate_size(&adjust_pointer_closure);
 }
 
 #endif // SHARE_GC_SERIAL_MARKSWEEP_INLINE_HPP

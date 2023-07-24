@@ -38,7 +38,6 @@
 class ReferenceProcessor;
 class DataLayout;
 class SerialOldTracer;
-class SlidingForwarding;
 class STWGCTimer;
 
 // MarkSweep takes care of global mark-compact garbage collection for a
@@ -51,7 +50,6 @@ class STWGCTimer;
 // declared at end
 class PreservedMark;
 class MarkAndPushClosure;
-class AdjustPointerClosure;
 
 class MarkSweep : AllStatic {
   //
@@ -85,7 +83,6 @@ class MarkSweep : AllStatic {
   //
   // Friend decls
   //
-  friend class AdjustPointerClosure;
   friend class KeepAliveClosure;
   friend class VM_MarkSweep;
 
@@ -138,10 +135,13 @@ class MarkSweep : AllStatic {
 
   static void preserve_mark(oop p, markWord mark);
                                 // Save the mark word so it can be restored later
+  template <bool ALT_FWD>
+  static void adjust_marks_impl();   // Adjust the pointers in the preserved marks table
   static void adjust_marks();   // Adjust the pointers in the preserved marks table
   static void restore_marks();  // Restore the marks that we saved in preserve_mark
 
-  static int adjust_pointers(const SlidingForwarding* const forwarding, oop obj);
+  template <bool ALT_FWD>
+  static int adjust_pointers(oop obj);
 
   static void follow_stack();   // Empty marking stack.
 
@@ -149,7 +149,8 @@ class MarkSweep : AllStatic {
 
   static void follow_cld(ClassLoaderData* cld);
 
-  template <class T> static inline void adjust_pointer(const SlidingForwarding* const forwarding, T* p);
+  template <bool ALT_FWD, class T>
+  static inline void adjust_pointer(T* p);
 
   // Check mark and maybe push on marking stack
   template <class T> static void mark_and_push(T* p);
@@ -184,11 +185,9 @@ public:
   }
 };
 
+template <bool ALT_FWD>
 class AdjustPointerClosure: public BasicOopIterateClosure {
-private:
-  const SlidingForwarding* const _forwarding;
  public:
-  AdjustPointerClosure(const SlidingForwarding* forwarding) : _forwarding(forwarding) {}
   template <typename T> void do_oop_work(T* p);
   virtual void do_oop(oop* p);
   virtual void do_oop(narrowOop* p);
@@ -206,7 +205,8 @@ public:
     _mark = mark;
   }
 
-  void adjust_pointer(const SlidingForwarding* const forwarding);
+  template <bool ALT_FWD>
+  void adjust_pointer();
   void restore();
 };
 

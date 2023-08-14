@@ -60,8 +60,8 @@ inline void PSPromotionManager::claim_or_forward_depth(T* p) {
   push_depth(ScannerTask(p));
 }
 
-inline void PSPromotionManager::promotion_trace_event(oop new_obj, oop old_obj, Klass* klass,
-                                                      size_t obj_size,
+inline void PSPromotionManager::promotion_trace_event(oop new_obj, oop old_obj,
+                                                      Klass* klass, size_t obj_size,
                                                       uint age, bool tenured,
                                                       const PSPromotionLAB* lab) {
   // Skip if memory allocation failed
@@ -160,15 +160,13 @@ inline oop PSPromotionManager::copy_unmarked_to_survivor_space(oop o,
 
   oop new_obj = NULL;
   bool new_obj_is_tenured = false;
-  Klass* klass;
-#ifdef _LP64
-  if (UseCompactObjectHeaders) {
-    klass = test_mark.safe_klass();
-  } else
-#endif
-  {
-    klass = o->klass();
-  }
+  // NOTE: With compact headers, it is not safe to load the Klass* from o, because
+  // that would access the mark-word, and the mark-word might change at any time by
+  // concurrent promotion. The promoted mark-word would point to the forwardee, which
+  // may not yet have completed copying. Therefore we must load the Klass* from
+  // the mark-word that we have already loaded. This is safe, because we have checked
+  // that this is not yet forwarded in the caller.
+  Klass* klass = o->forward_safe_klass(test_mark);
   size_t new_obj_size = o->size_given_klass(klass);
 
   // Find the objects age, MT safe.

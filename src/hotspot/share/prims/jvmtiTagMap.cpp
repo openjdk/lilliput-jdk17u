@@ -2832,6 +2832,12 @@ bool VM_HeapWalkOperation::visit(oop o) {
 }
 
 void VM_HeapWalkOperation::doit() {
+  if (UseCompactObjectHeaders) {
+    // Cannot perform a heap walk safely. See JDK-8283710 and related issues.
+    log_warning(jvmti)("Requested a JVMTI heap walk with compact object headers enabled. This is not supported yet.");
+    return;
+  }
+
   ResourceMark rm;
   ClassFieldMapCacheMark cm;
 

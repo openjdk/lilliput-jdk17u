@@ -92,15 +92,16 @@ markWord oopDesc::resolve_mark() const {
   return hdr;
 }
 
-void oopDesc::init_mark() {
-#ifdef _LP64
+markWord oopDesc::prototype_mark() const {
   if (UseCompactObjectHeaders) {
-    markWord header = resolve_mark();
-    assert(UseCompressedClassPointers, "expect compressed klass pointers");
-    set_mark(markWord((header.value() & markWord::klass_mask_in_place) | markWord::prototype().value()));
-  } else
-#endif
-  set_mark(markWord::prototype());
+    return klass()->prototype_header();
+  } else {
+    return markWord::prototype();
+  }
+}
+
+void oopDesc::init_mark() {
+  set_mark(markWord::prototype_for_klass(klass()));
 }
 
 Klass* oopDesc::klass() const {
@@ -168,11 +169,21 @@ void oopDesc::release_set_klass(HeapWord* mem, Klass* k) {
   }
 }
 
+int oopDesc::klass_gap() const {
+  assert(!UseCompactObjectHeaders, "don't get Klass* gap with compact headers");
+  return *(int*)(((intptr_t)this) + klass_gap_offset_in_bytes());
+}
+
 void oopDesc::set_klass_gap(HeapWord* mem, int v) {
   assert(!UseCompactObjectHeaders, "don't set Klass* gap with compact headers");
   if (UseCompressedClassPointers) {
     *(int*)(((char*)mem) + klass_gap_offset_in_bytes()) = v;
   }
+}
+
+void oopDesc::set_klass_gap(int v) {
+  assert(!UseCompactObjectHeaders, "don't set Klass* gap with compact headers");
+  set_klass_gap((HeapWord*)this, v);
 }
 
 bool oopDesc::is_a(Klass* k) const {
@@ -237,6 +248,53 @@ int oopDesc::size_given_klass(Klass* klass)  {
   assert(s > 0, "Oop size must be greater than zero, not %d", s);
   assert(is_object_aligned(s), "Oop size is not properly aligned: %d", s);
   return s;
+}
+
+#ifdef _LP64
+Klass* oopDesc::forward_safe_klass_impl(markWord m) const {
+  assert(UseCompactObjectHeaders, "Only get here with compact headers");
+  if (m.is_marked()) {
+    oop fwd = forwardee(m);
+    markWord m2 = fwd->mark();
+    assert(!m2.is_marked() || m2.self_forwarded(), "no double forwarding: this: " PTR_FORMAT " (" INTPTR_FORMAT "), fwd: " PTR_FORMAT " (" INTPTR_FORMAT ")", p2i(this), m.value(), p2i(fwd), m2.value());
+    m = m2;
+  }
+  return m.actual_mark().klass();
+}
+#endif
+
+Klass* oopDesc::forward_safe_klass(markWord m) const {
+#ifdef _LP64
+  if (UseCompactObjectHeaders) {
+    return forward_safe_klass_impl(m);
+  } else
+#endif
+  {
+    return klass();
+  }
+}
+
+Klass* oopDesc::forward_safe_klass() const {
+#ifdef _LP64
+  if (UseCompactObjectHeaders) {
+    return forward_safe_klass_impl(mark());
+  } else
+#endif
+  {
+    return klass();
+  }
+}
+
+size_t oopDesc::forward_safe_size() {
+  return size_given_klass(forward_safe_klass());
+}
+
+void oopDesc::forward_safe_init_mark() {
+  if (UseCompactObjectHeaders) {
+    set_mark(forward_safe_klass()->prototype_header());
+  } else {
+    init_mark();
+  }
 }
 
 bool oopDesc::is_instance()  const { return klass()->is_instance_klass();  }
@@ -447,6 +505,7 @@ void oopDesc::oop_iterate_backwards(OopClosureType* cl) {
 
 template <typename OopClosureType>
 void oopDesc::oop_iterate_backwards(OopClosureType* cl, Klass* k) {
+  assert(UseCompactObjectHeaders || k == klass(), "wrong klass");
   OopIteratorClosureDispatch::oop_oop_iterate_backwards(cl, this, k);
 }
 

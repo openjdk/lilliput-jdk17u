@@ -71,12 +71,21 @@ inline bool markWord::must_be_preserved_for_promotion_failure(const oopDesc* obj
 
 inline markWord markWord::prototype_for_klass(const Klass* klass) {
   markWord prototype_header = klass->prototype_header();
-  assert(prototype_header == prototype() || prototype_header.has_bias_pattern(), "corrupt prototype header");
+  assert(UseCompactObjectHeaders || prototype_header == prototype() || prototype_header.has_bias_pattern(), "corrupt prototype header");
 
   return prototype_header;
 }
 
 #ifdef _LP64
+markWord markWord::actual_mark() const {
+  assert(UseCompactObjectHeaders, "only safe when using compact headers");
+  if (has_displaced_mark_helper()) {
+    return displaced_mark_helper();
+  } else {
+    return *this;
+  }
+}
+
 narrowKlass markWord::narrow_klass() const {
   assert(UseCompactObjectHeaders, "only used with compact object headers");
   return narrowKlass(value() >> klass_shift);

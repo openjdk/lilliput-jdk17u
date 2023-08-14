@@ -42,6 +42,7 @@
 //
 //  64 bits:
 //  --------
+//  unused:25 hash:31 -->| unused_gap:1   age:4    biased_lock:1 lock:2 (normal object)
 //  JavaThread*:54 epoch:2 unused_gap:1   age:4    biased_lock:1 lock:2 (biased object)
 //
 //  64 bits (with compact headers):
@@ -315,7 +316,7 @@ class markWord {
     return ((value() & monitor_value) != 0);
   }
   ObjectMonitor* monitor() const {
-   assert(has_monitor(), "check");
+    assert(has_monitor(), "check");
     // Use xor instead of &~ to provide one extra tag-bit check.
     return (ObjectMonitor*) (value() ^ monitor_value);
   }
@@ -387,6 +388,7 @@ class markWord {
   }
 
 #ifdef _LP64
+  inline markWord actual_mark() const;
   inline Klass* klass() const;
   inline Klass* klass_or_null() const;
   inline Klass* safe_klass() const;

@@ -40,15 +40,24 @@ void PreservedMarks::restore() {
   assert_empty();
 }
 
-void PreservedMarks::adjust_during_full_gc() {
+template <bool ALT_FWD>
+void PreservedMarks::adjust_during_full_gc_impl() {
   StackIterator<OopAndMarkWord, mtGC> iter(_stack);
   while (!iter.is_empty()) {
     OopAndMarkWord* elem = iter.next_addr();
 
     oop obj = elem->get_oop();
     if (SlidingForwarding::is_forwarded(obj)) {
-      elem->set_oop(SlidingForwarding::forwardee(obj));
+      elem->set_oop(SlidingForwarding::forwardee<ALT_FWD>(obj));
     }
+  }
+}
+
+void PreservedMarks::adjust_during_full_gc() {
+  if (UseAltGCForwarding) {
+    adjust_during_full_gc_impl<true>();
+  } else {
+    adjust_during_full_gc_impl<false>();
   }
 }
 
@@ -73,21 +82,7 @@ void PreservedMarks::assert_empty() {
 
 void RemoveForwardedPointerClosure::do_object(oop obj) {
   if (obj->is_forwarded()) {
-#ifdef _LP64
-    if (UseCompactObjectHeaders) {
-      oop forwardee = obj->forwardee();
-      markWord header = forwardee->mark();
-      if (header.has_displaced_mark_helper()) {
-        header = header.displaced_mark_helper();
-      }
-      assert(UseCompressedClassPointers, "assume +UseCompressedClassPointers");
-      narrowKlass nklass = header.narrow_klass();
-      obj->set_mark(markWord::prototype().set_narrow_klass(nklass));
-    } else
-#endif
-    {
-      PreservedMarks::init_forwarded_mark(obj);
-    }
+    PreservedMarks::init_forwarded_mark(obj);
   }
 }
 

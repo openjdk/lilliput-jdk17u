@@ -545,7 +545,7 @@ void C2_MacroAssembler::fast_lock(Register objReg, Register boxReg, Register tmp
     }
   } else {
     assert(LockingMode == LM_LIGHTWEIGHT, "");
-    fast_lock_impl(objReg, tmpReg, thread, scrReg, DONE_LABEL);
+    lightweight_lock(objReg, tmpReg, thread, scrReg, DONE_LABEL);
     xorl(tmpReg, tmpReg); // Set ZF=1 to indicate success
   }
   jmp(DONE_LABEL);
@@ -859,7 +859,7 @@ void C2_MacroAssembler::fast_unlock(Register objReg, Register boxReg, Register t
     bind  (Stacked);
     if (LockingMode == LM_LIGHTWEIGHT) {
       mov(boxReg, tmpReg);
-      fast_unlock_impl(objReg, boxReg, tmpReg, DONE_LABEL);
+      lightweight_unlock(objReg, boxReg, tmpReg, DONE_LABEL);
       xorl(tmpReg, tmpReg);
     } else if (LockingMode == LM_LEGACY) {
       movptr(tmpReg, Address (boxReg, 0));      // re-fetch

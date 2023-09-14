@@ -1260,7 +1260,7 @@ void InterpreterMacroAssembler::lock_object(Register lock_reg) {
 #endif
       // Load object header, prepare for CAS from unlocked to locked.
       movptr(swap_reg, Address(obj_reg, oopDesc::mark_offset_in_bytes()));
-      fast_lock_impl(obj_reg, swap_reg, thread, tmp_reg, slow_case);
+      lightweight_lock(obj_reg, swap_reg, thread, tmp_reg, slow_case);
       jmp(done);
     } else {
       // Load immediate 1 into swap_reg %rax
@@ -1395,7 +1395,7 @@ void InterpreterMacroAssembler::unlock_object(Register lock_reg) {
       // Try to swing header from locked to unlock.
       movptr(swap_reg, Address(obj_reg, oopDesc::mark_offset_in_bytes()));
       andptr(swap_reg, ~(int32_t)markWord::lock_mask_in_place);
-      fast_unlock_impl(obj_reg, swap_reg, header_reg, slow_case);
+      lightweight_unlock(obj_reg, swap_reg, header_reg, slow_case);
       jmp(done);
     } else {
       if (UseBiasedLocking) {

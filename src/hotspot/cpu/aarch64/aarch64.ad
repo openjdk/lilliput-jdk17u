@@ -3867,7 +3867,7 @@ encode %{
       __ b(cont);
     } else {
       assert(LockingMode == LM_LIGHTWEIGHT, "must be");
-      __ fast_lock(oop, disp_hdr, tmp, rscratch1, cont);
+      __ lightweight_lock(oop, disp_hdr, tmp, rscratch1, cont);
       __ b(cont);
     }
 
@@ -3945,7 +3945,7 @@ encode %{
       __ b(cont);
     } else {
       assert(LockingMode == LM_LIGHTWEIGHT, "must be");
-      __ fast_unlock(oop, tmp, box, disp_hdr, cont);
+      __ lightweight_unlock(oop, tmp, box, disp_hdr, cont);
       __ b(cont);
     }
 

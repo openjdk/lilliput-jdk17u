@@ -53,10 +53,6 @@ markWord oopDesc::mark() const {
 markWord oopDesc::mark_acquire() const {
   return Atomic::load_acquire(&_mark);
 }
-
-markWord oopDesc::mark_acquire() const {
-  return Atomic::load_acquire(&_mark);
-}
 markWord* oopDesc::mark_addr() const {
   return (markWord*) &_mark;
 }

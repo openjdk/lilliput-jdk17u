@@ -47,6 +47,7 @@ public class TestZGCWithCDS {
                                   .dump(helloJar,
                                         new String[] {"Hello"},
                                         "-XX:+UseZGC",
+                                        "-XX:+UnlockExperimentalVMOptions",
                                         "-XX:-UseCompactObjectHeaders",
                                         "-Xlog:cds");
          out.shouldContain("Dumping shared data to file:");
@@ -56,6 +57,7 @@ public class TestZGCWithCDS {
          out = TestCommon
                    .exec(helloJar,
                          "-XX:+UseZGC",
+                         "-XX:+UnlockExperimentalVMOptions",
                          "-XX:-UseCompactObjectHeaders",
                          "-Xlog:cds",
                          "Hello");
@@ -68,6 +70,7 @@ public class TestZGCWithCDS {
                          "-XX:-UseZGC",
                          "-XX:+UseCompressedOops",           // in case turned off by vmoptions
                          "-XX:+UseCompressedClassPointers",  // by jtreg
+                         "-XX:+UnlockExperimentalVMOptions",
                          "-XX:-UseCompactObjectHeaders",
                          "-Xlog:cds",
                          "Hello");
@@ -81,6 +84,7 @@ public class TestZGCWithCDS {
                          "-XX:+UseSerialGC",
                          "-XX:-UseCompressedOops",
                          "-XX:-UseCompressedClassPointers",
+                         "-XX:+UnlockExperimentalVMOptions",
                          "-XX:-UseCompactObjectHeaders",
                          "-Xlog:cds",
                          "Hello");
@@ -94,6 +98,7 @@ public class TestZGCWithCDS {
                          "-XX:+UseSerialGC",
                          "-XX:-UseCompressedOops",
                          "-XX:+UseCompressedClassPointers",
+                         "-XX:+UnlockExperimentalVMOptions",
                          "-XX:-UseCompactObjectHeaders",
                          "-Xlog:cds",
                          "Hello");
@@ -106,6 +111,7 @@ public class TestZGCWithCDS {
                          "-XX:+UseSerialGC",
                          "-XX:+UseCompressedOops",
                          "-XX:-UseCompressedClassPointers",
+                         "-XX:+UnlockExperimentalVMOptions",
                          "-XX:-UseCompactObjectHeaders",
                          "-Xlog:cds",
                          "Hello");
@@ -119,6 +125,7 @@ public class TestZGCWithCDS {
                          "-XX:+UseSerialGC",
                          "-XX:+UseCompressedOops",
                          "-XX:+UseCompressedClassPointers",
+                         "-XX:+UnlockExperimentalVMOptions",
                          "-XX:-UseCompactObjectHeaders",
                          "-Xlog:cds",
                          "Hello");
@@ -133,6 +140,7 @@ public class TestZGCWithCDS {
                          "-XX:+UseSerialGC",
                          "-XX:-UseCompressedOops",
                          "-XX:+UseCompressedClassPointers",
+                         "-XX:+UnlockExperimentalVMOptions",
                          "-XX:-UseCompactObjectHeaders",
                          "-Xlog:cds");
          out.shouldContain("Dumping shared data to file:");
@@ -142,6 +150,7 @@ public class TestZGCWithCDS {
          out = TestCommon
                    .exec(helloJar,
                          "-XX:+UseZGC",
+                         "-XX:+UnlockExperimentalVMOptions",
                          "-XX:-UseCompactObjectHeaders",
                          "-Xlog:cds",
                          "Hello");

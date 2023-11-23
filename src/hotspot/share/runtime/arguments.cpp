@@ -3171,7 +3171,9 @@ jint Arguments::finalize_vm_init_args(bool patch_mod_javabase) {
 
 #ifdef _LP64
   if (UseCompactObjectHeaders && UseZGC) {
-    warning("ZGC does not work with compact object headers, disabling UseCompactObjectHeaders");
+    if (FLAG_IS_CMDLINE(UseCompactObjectHeaders)) {
+      warning("ZGC does not work with compact object headers, disabling UseCompactObjectHeaders");
+    }
     FLAG_SET_DEFAULT(UseCompactObjectHeaders, false);
   }
 

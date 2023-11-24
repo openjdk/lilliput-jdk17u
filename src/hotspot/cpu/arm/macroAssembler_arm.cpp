@@ -1902,4 +1902,3 @@ void MacroAssembler::read_polling_page(Register dest, relocInfo::relocType rtype
   relocate(rtype);
   ldr(dest, Address(dest));
 }
-

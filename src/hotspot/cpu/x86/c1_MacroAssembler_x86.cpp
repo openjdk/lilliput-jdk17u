@@ -69,7 +69,7 @@ int C1_MacroAssembler::lock_object(Register hdr, Register obj, Register disp_hdr
 #endif
     // Load object header
     movptr(hdr, Address(obj, hdr_offset));
-    lightweight_lock(obj, hdr, thread, tmp, slow_case);
+    lightweight_lock(obj, hdr, thread, scratch, slow_case);
   } else  if (LockingMode == LM_LEGACY) {
     Label done;
 

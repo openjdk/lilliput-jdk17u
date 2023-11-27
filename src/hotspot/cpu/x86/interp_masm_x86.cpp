@@ -1377,7 +1377,7 @@ void InterpreterMacroAssembler::unlock_object(Register lock_reg) {
       andptr(swap_reg, ~(int32_t)markWord::lock_mask_in_place);
       lightweight_unlock(obj_reg, swap_reg, header_reg, slow_case);
       jmp(done);
-    } else if (LockingMode == LM_LEGACY) {
+    } else {
       if (UseBiasedLocking) {
         biased_locking_exit(obj_reg, header_reg, done);
       }

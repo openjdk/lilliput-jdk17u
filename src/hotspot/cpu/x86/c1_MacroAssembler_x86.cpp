@@ -70,7 +70,7 @@ int C1_MacroAssembler::lock_object(Register hdr, Register obj, Register disp_hdr
     // Load object header
     movptr(hdr, Address(obj, hdr_offset));
     lightweight_lock(obj, hdr, thread, tmp, slow_case);
-  } else  if (LockingMode == LM_LEGACY) {
+  } else {
     Label done;
 
     if (UseBiasedLocking) {
@@ -135,7 +135,7 @@ void C1_MacroAssembler::unlock_object(Register hdr, Register obj, Register disp_
     movptr(disp_hdr, Address(obj, hdr_offset));
     andptr(disp_hdr, ~(int32_t)markWord::lock_mask_in_place);
     lightweight_unlock(obj, disp_hdr, hdr, slow_case);
-  } else if (LockingMode == LM_LEGACY) {
+  } else {
     Label done;
 
     if (UseBiasedLocking) {

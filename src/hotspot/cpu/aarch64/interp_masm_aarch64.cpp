@@ -758,7 +758,7 @@ void InterpreterMacroAssembler::lock_object(Register lock_reg)
       ldr(tmp, Address(obj_reg, oopDesc::mark_offset_in_bytes()));
       lightweight_lock(obj_reg, tmp, rscratch1, rscratch2, slow_case);
       b(done);
-    } else if (LockingMode == LM_LEGACY) {
+    } else {
       if (UseBiasedLocking) {
         biased_locking_enter(lock_reg, obj_reg, swap_reg, tmp, false, done, &slow_case);
       }

@@ -91,7 +91,7 @@ int C1_MacroAssembler::lock_object(Register hdr, Register obj, Register disp_hdr
   ldr(hdr, Address(obj, hdr_offset));
   if (LockingMode == LM_LIGHTWEIGHT) {
     lightweight_lock(obj, hdr, rscratch1, rscratch2, slow_case);
-  } else if (LockingMode == LM_LEGACY) {
+  } else {
     // and mark it as unlocked
     orr(hdr, hdr, markWord::unlocked_value);
     // save unlocked object header into the displaced header location on the stack
@@ -167,7 +167,7 @@ void C1_MacroAssembler::unlock_object(Register hdr, Register obj, Register disp_
     tst(hdr, markWord::monitor_value);
     br(Assembler::NE, slow_case);
     lightweight_unlock(obj, hdr, rscratch1, rscratch2, slow_case);
-  } else if (LockingMode == LM_LEGACY) {
+  } else {
     // test if object header is pointing to the displaced header, and if so, restore
     // the displaced header in the object - if the object header is not pointing to
     // the displaced header, get the object header instead

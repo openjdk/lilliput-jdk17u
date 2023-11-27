@@ -1073,40 +1073,18 @@ void InterpreterMacroAssembler::unlock_object(Register monitor) {
     if (!UseBiasedLocking) { ld(object, BasicObjectLock::obj_offset_in_bytes(), monitor); }
     addi(object_mark_addr, object, oopDesc::mark_offset_in_bytes());
 
-    if (LockingMode == LM_LIGHTWEIGHT) {
-      // Check for non-symmetric locking. This is allowed by the spec and the interpreter
-      // must handle it.
-      Register tmp = current_header;
-      // First check for lock-stack underflow.
-      lwz(tmp, in_bytes(JavaThread::lock_stack_top_offset()), R16_thread);
-      cmplwi(CCR0, tmp, (unsigned)LockStack::start_offset());
-      ble(CCR0, slow_case);
-      // Then check if the top of the lock-stack matches the unlocked object.
-      addi(tmp, tmp, -oopSize);
-      ldx(tmp, tmp, R16_thread);
-      cmpd(CCR0, tmp, object);
-      bne(CCR0, slow_case);
-
-      ld(header, oopDesc::mark_offset_in_bytes(), object);
-      andi_(R0, header, markWord::monitor_value);
-      bne(CCR0, slow_case);
-      lightweight_unlock(object, header, slow_case);
-    } else {
-      addi(object_mark_addr, object, oopDesc::mark_offset_in_bytes());
-
-      // We have the displaced header in displaced_header. If the lock is still
-      // lightweight, it will contain the monitor address and we'll store the
-      // displaced header back into the object's mark word.
-      // CmpxchgX sets CCR0 to cmpX(current, monitor).
-      cmpxchgd(/*flag=*/CCR0,
-               /*current_value=*/current_header,
-               /*compare_value=*/monitor, /*exchange_value=*/header,
-               /*where=*/object_mark_addr,
-               MacroAssembler::MemBarRel,
-               MacroAssembler::cmpxchgx_hint_release_lock(),
-               noreg,
-               &slow_case);
-    }
+    // We have the displaced header in displaced_header. If the lock is still
+    // lightweight, it will contain the monitor address and we'll store the
+    // displaced header back into the object's mark word.
+    // CmpxchgX sets CCR0 to cmpX(current, monitor).
+    cmpxchgd(/*flag=*/CCR0,
+             /*current_value=*/current_header,
+             /*compare_value=*/monitor, /*exchange_value=*/displaced_header,
+             /*where=*/object_mark_addr,
+             MacroAssembler::MemBarRel,
+             MacroAssembler::cmpxchgx_hint_release_lock(),
+             noreg,
+             &slow_case);
     b(free_slot);
 
     // } else {

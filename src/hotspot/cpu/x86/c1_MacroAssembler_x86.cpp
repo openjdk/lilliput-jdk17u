@@ -69,7 +69,7 @@ int C1_MacroAssembler::lock_object(Register hdr, Register obj, Register disp_hdr
 #endif
     // Load object header
     movptr(hdr, Address(obj, hdr_offset));
-    fast_lock_impl(obj, hdr, thread, scratch, slow_case);
+    lightweight_lock(obj, hdr, thread, scratch, slow_case);
   } else {
     Label done;
 
@@ -134,7 +134,7 @@ void C1_MacroAssembler::unlock_object(Register hdr, Register obj, Register disp_
     verify_oop(obj);
     movptr(disp_hdr, Address(obj, hdr_offset));
     andptr(disp_hdr, ~(int32_t)markWord::lock_mask_in_place);
-    fast_unlock_impl(obj, disp_hdr, hdr, slow_case);
+    lightweight_unlock(obj, disp_hdr, hdr, slow_case);
   } else {
     Label done;
 

@@ -8774,7 +8774,7 @@ void MacroAssembler::get_thread(Register thread) {
 
 #endif // !WIN32 || _LP64
 
-// Implements fast-locking.
+// Implements lightweight-locking.
 // Branches to slow upon failure to lock the object, with ZF cleared.
 // Falls through upon success with unspecified ZF.
 //
@@ -8782,7 +8782,7 @@ void MacroAssembler::get_thread(Register thread) {
 // hdr: the (pre-loaded) header of the object, must be rax
 // thread: the thread which attempts to lock obj
 // tmp: a temporary register
-void MacroAssembler::fast_lock_impl(Register obj, Register hdr, Register thread, Register tmp, Label& slow) {
+void MacroAssembler::lightweight_lock(Register obj, Register hdr, Register thread, Register tmp, Label& slow) {
   assert(hdr == rax, "header must be in rax for cmpxchg");
   assert_different_registers(obj, hdr, thread, tmp);
 
@@ -8810,14 +8810,14 @@ void MacroAssembler::fast_lock_impl(Register obj, Register hdr, Register thread,
   movl(Address(thread, JavaThread::lock_stack_top_offset()), tmp);
 }
 
-// Implements fast-unlocking.
+// Implements lightweight-unlocking.
 // Branches to slow upon failure, with ZF cleared.
 // Falls through upon success, with unspecified ZF.
 //
 // obj: the object to be unlocked
 // hdr: the (pre-loaded) header of the object, must be rax
 // tmp: a temporary register
-void MacroAssembler::fast_unlock_impl(Register obj, Register hdr, Register tmp, Label& slow) {
+void MacroAssembler::lightweight_unlock(Register obj, Register hdr, Register tmp, Label& slow) {
   assert(hdr == rax, "header must be in rax for cmpxchg");
   assert_different_registers(obj, hdr, tmp);
 

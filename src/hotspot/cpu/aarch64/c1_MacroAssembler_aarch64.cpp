@@ -61,10 +61,10 @@ void C1_MacroAssembler::float_cmp(bool is_float, int unordered_result,
   }
 }
 
-int C1_MacroAssembler::lock_object(Register hdr, Register obj, Register disp_hdr, Register scratch, Label& slow_case) {
+int C1_MacroAssembler::lock_object(Register hdr, Register obj, Register disp_hdr, Register temp, Label& slow_case) {
   const int aligned_mask = BytesPerWord -1;
   const int hdr_offset = oopDesc::mark_offset_in_bytes();
-  assert(hdr != obj && hdr != disp_hdr && obj != disp_hdr, "registers must be different");
+  assert_different_registers(hdr, obj, disp_hdr, temp, rscratch2);
   Label done;
   int null_check_offset = -1;
 
@@ -83,14 +83,14 @@ int C1_MacroAssembler::lock_object(Register hdr, Register obj, Register disp_hdr
   }
 
   if (UseBiasedLocking) {
-    assert(scratch != noreg, "should have scratch register at this point");
-    biased_locking_enter(disp_hdr, obj, hdr, scratch, false, done, &slow_case);
+    assert(temp != noreg, "should have temp register at this point");
+    biased_locking_enter(disp_hdr, obj, hdr, temp, false, done, &slow_case);
   }
 
   // Load object header
   ldr(hdr, Address(obj, hdr_offset));
   if (LockingMode == LM_LIGHTWEIGHT) {
-    lightweight_lock(obj, hdr, rscratch1, rscratch2, slow_case);
+    lightweight_lock(obj, hdr, temp, rscratch2, slow_case);
   } else {
     // and mark it as unlocked
     orr(hdr, hdr, markWord::unlocked_value);
@@ -134,10 +134,10 @@ int C1_MacroAssembler::lock_object(Register hdr, Register obj, Register disp_hdr
 }
 
 
-void C1_MacroAssembler::unlock_object(Register hdr, Register obj, Register disp_hdr, Label& slow_case) {
+void C1_MacroAssembler::unlock_object(Register hdr, Register obj, Register disp_hdr, Register temp, Label& slow_case) {
   const int aligned_mask = BytesPerWord -1;
   const int hdr_offset = oopDesc::mark_offset_in_bytes();
-  assert(hdr != obj && hdr != disp_hdr && obj != disp_hdr, "registers must be different");
+  assert_different_registers(hdr, obj, disp_hdr, temp, rscratch2);
   Label done;
 
   if (UseBiasedLocking) {
@@ -166,7 +166,7 @@ void C1_MacroAssembler::unlock_object(Register hdr, Register obj, Register disp_
     // be encoded.
     tst(hdr, markWord::monitor_value);
     br(Assembler::NE, slow_case);
-    lightweight_unlock(obj, hdr, rscratch1, rscratch2, slow_case);
+    lightweight_unlock(obj, hdr, temp, rscratch2, slow_case);
   } else {
     // test if object header is pointing to the displaced header, and if so, restore
     // the displaced header in the object - if the object header is not pointing to

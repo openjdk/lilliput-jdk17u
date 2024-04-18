@@ -69,8 +69,6 @@ int C1_MacroAssembler::lock_object(Register hdr, Register obj, Register disp_hdr
     const Register thread = disp_hdr;
     get_thread(thread);
 #endif
-    // Load object header
-    movptr(hdr, Address(obj, hdr_offset));
     lightweight_lock(obj, hdr, thread, scratch, slow_case);
   } else {
     Label done;
